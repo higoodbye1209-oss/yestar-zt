@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>C端原型 — 全部页面（Figma导入用）</title>
+<title>C端原型 — 全部页面平铺（Figma 导入用）</title>
 <style>
+
 :root {
   --primary: #722424;
   --primary-hover: #5E1D1D;
@@ -55,8 +56,8 @@ body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-con
 .nav-bar .avatar-sm { width: 28px; height: 28px; border-radius: 14px; background: var(--primary-subtle); display: flex; align-items: center; justify-content: center; }
 
 /* ========== Page Container ========== */
-.page { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--canvas); flex-direction: column; }
-.page.active { display: flex; }
+.page { display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--canvas); flex-direction: column; }
+/* .page.active merged into .page */
 .page-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 16px; }
 
 /* ========== Tab Bar ========== */
@@ -208,31 +209,22 @@ body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-con
 .gap-sm { gap: 8px; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
-</style>
-/* ===== Gallery Overrides ===== */
-body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; display: block; }
-.gallery-header { text-align: center; padding: 20px 0 30px; }
-.gallery-title { font-family: var(--serif); font-size: 28px; color: #FFF; margin-bottom: 4px; }
-.gallery-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+
+
+/* ===== Gallery Layout ===== */
+body { background: #2a2a2a; padding: 30px; margin: 0; }
+.gallery-title { text-align: center; font-family: -apple-system, sans-serif; font-size: 28px; color: #FFF; margin-bottom: 4px; }
+.gallery-sub { text-align: center; font-family: -apple-system, sans-serif; font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 30px; }
 .gallery-grid { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; max-width: 1700px; margin: 0 auto; }
 .phone-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.phone-label { font-size: 12px; color: rgba(255,255,255,0.55); font-family: var(--sans); }
-.phone { width: 375px; height: 812px; background: var(--canvas); border-radius: 32px; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.5); position: relative; }
-.phone .page { display: flex !important; flex-direction: column; height: 100%; }
-.phone .page-content { flex: 1; overflow-y: auto; }
-
-/* Make tab items non-interactive looking but preserved */
-.phone .tab-item { pointer-events: none; }
-.phone .back { pointer-events: none; }
-.phone .avatar-sm { pointer-events: none; }
-.phone .btn-gold, .phone .btn-outline, .phone .btn-outline-sm, .phone .btn-ghost, .phone .btn-gold-sm, .phone .btn-danger-sm { pointer-events: none; }
-.phone .food-card { pointer-events: none; }
-.phone .banner { pointer-events: none; }
-.phone .cat-tab { pointer-events: none; }
-.phone .star { pointer-events: none; }
-
+.phone-label { font-size: 13px; color: rgba(255,255,255,0.6); font-family: -apple-system, sans-serif; }
+/* Each phone is a self-contained 375x812 viewport */
+.phone { width: 375px; height: 812px; background: var(--canvas); border-radius: 32px; position: relative; overflow: hidden; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+/* Make all .page divs inside phone visible */
+.phone .page { display: flex !important; flex-direction: column; height: 100%; position: absolute; top: 0; left: 0; width: 100%; }
+</style>
 </head>
-<body class="gallery-body">
+<body>
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <symbol id="ic-dining" viewBox="0 0 24 24"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2M14 15c0 2.8 1.5 5 4 5s4-2.2 4-5v-2"/></symbol>
   <symbol id="ic-orders" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></symbol>
@@ -263,13 +255,11 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
   <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
   <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
 </svg>
-<div class="gallery-header">
-  <div class="gallery-title">YESTAR · 臻味 — C端会员端</div>
-  <div class="gallery-sub">共 16 个页面 · 375×812 · 可直接导入 Figma</div>
-</div>
+<div class="gallery-title">YESTAR · 臻味 — C端会员端</div>
+<div class="gallery-sub">共 16 个页面 · 375×812</div>
 <div class="gallery-grid">
   <div class="phone-wrapper">
-    <div class="phone-label"> active</div>
+    <div class="phone-label">01 · 首页点餐</div>
     <div class="phone">
 <div class="page" id="page-home">
   <div class="status-bar">
@@ -429,7 +419,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">02 · 今日推荐套餐</div>
     <div class="phone">
 <div class="page" id="page-recommend">
   <div class="detail-hero" style="background-image: url('原型_图片/food1.png'); background-size: cover; background-position: center;">
@@ -493,7 +483,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">03 · 术后修护套餐</div>
     <div class="phone">
 <div class="page" id="page-detail">
   <div class="detail-hero" style="background-image: url('原型_图片/food2.png'); background-size: cover; background-position: center;">
@@ -555,7 +545,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">04 · 燕窝枸杞粥</div>
     <div class="phone">
 <div class="page" id="page-detail2">
   <div class="detail-hero" style="background-image: url('原型_图片/food3.png'); background-size: cover; background-position: center;">
@@ -594,7 +584,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">05 · 双炖花胶胶原汤</div>
     <div class="phone">
 <div class="page" id="page-detail3">
   <div class="detail-hero" style="background-image: url('原型_图片/food4.png'); background-size: cover; background-position: center;">
@@ -632,7 +622,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">06 · 泰式鲜虾沙拉</div>
     <div class="phone">
 <div class="page" id="page-detail4">
   <div class="detail-hero" style="background-image: url('原型_图片/food5.png'); background-size: cover; background-position: center;">
@@ -670,7 +660,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">07 · 购物车</div>
     <div class="phone">
 <div class="page" id="page-cart">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -694,7 +684,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">08 · 确认下单</div>
     <div class="phone">
 <div class="page" id="page-confirm">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -732,7 +722,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">09 · 下单成功</div>
     <div class="phone">
 <div class="page" id="page-success">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -754,7 +744,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">10 · 订单列表</div>
     <div class="phone">
 <div class="page" id="page-orders">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -942,7 +932,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">11 · 菜品评价</div>
     <div class="phone">
 <div class="page" id="page-rate">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -971,7 +961,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">12 · 我的</div>
     <div class="phone">
 <div class="page" id="page-profile">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -1042,7 +1032,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">13 · 过敏源管理</div>
     <div class="phone">
 <div class="page" id="page-allergy">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -1119,7 +1109,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">14 · 饮食偏好</div>
     <div class="phone">
 <div class="page" id="page-preference">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -1161,7 +1151,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">15 · 陪同点餐</div>
     <div class="phone">
 <div class="page" id="page-companion">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
@@ -1228,7 +1218,7 @@ body.gallery-body { background: #1a1a1a; padding: 30px; min-height: 100vh; displ
     </div>
   </div>
   <div class="phone-wrapper">
-    <div class="phone-label"></div>
+    <div class="phone-label">16 · 身份核验</div>
     <div class="phone">
 <div class="page" id="page-verify">
   <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
