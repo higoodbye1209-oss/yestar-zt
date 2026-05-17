@@ -27,14 +27,102 @@ body {
 
 /* ========== Print ========== */
 @media print {
-  body { background: #FFF; }
-  .page-wrapper { box-shadow: none; max-width: 100%; margin: 0; }
+  @page { margin: 16mm 14mm; size: A4; }
+
+  html, body {
+    background: #FFF !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  body {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .page-wrapper {
+    box-shadow: none !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   .no-print { display: none !important; }
-  h2 { page-break-after: avoid; }
-  h3 { page-break-after: avoid; }
-  table { page-break-inside: auto; }
+
+  /* force colors to print */
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  h2 {
+    page-break-after: avoid;
+    font-size: 18px;
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+
+  h3 {
+    page-break-after: avoid;
+    font-size: 15px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  table {
+    page-break-inside: auto;
+    font-size: 11px;
+    width: 100%;
+  }
+
   thead { display: table-header-group; }
+
+  thead th {
+    background: #722424 !important;
+    color: #FFF !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   tr { page-break-inside: avoid; }
+
+  tbody tr:nth-child(even) {
+    background: #FAFAFA !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .badge, .badge-c, .badge-b, .badge-role {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .info-card {
+    background: #FAFAFA !important;
+    border-left: 3px solid #C89A38 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cover {
+    padding: 20px 0 24px;
+    margin-bottom: 24px;
+  }
+
+  .cover h1 { font-size: 26px; }
+
+  .prototype-link {
+    background: #722424 !important;
+    color: #FFF !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .footer {
+    margin-top: 24px;
+    padding-top: 12px;
+  }
 }
 
 /* ========== Web ========== */
