@@ -264,7 +264,13 @@ body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-con
     <div class="left">
       <span class="title" style="font-family:var(--serif);font-size:17px;letter-spacing:0.5px;">YESTAR &middot; 臻味</span>
     </div>
-    <div class="avatar-sm" onclick="navigateTo('page-profile')" style="cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="navigateTo('page-cart')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.5"><use href="#ic-cart"/></svg>
+        <span id="cart-dot" style="display:none;position:absolute;top:0;right:0;width:8px;height:8px;background:var(--danger);border-radius:4px;"></span>
+      </div>
+      <div class="avatar-sm" onclick="navigateTo('page-profile')" style="cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+    </div>
   </div>
 
   <div class="page-content">
@@ -1263,6 +1269,9 @@ function renderCart() {
     footer.style.display = 'block';
     if (countEl) countEl.textContent = cart.length + '件';
   }
+  // Update cart dot on home page nav bar
+  const dot = document.getElementById('cart-dot');
+  if (dot) { dot.style.display = cart.length > 0 ? 'block' : 'none'; }
 }
 
 function renderConfirm() {
@@ -1282,6 +1291,8 @@ function renderConfirm() {
 
 function submitOrder() {
   cart = [];
+  const dot = document.getElementById('cart-dot');
+  if (dot) dot.style.display = 'none';
   const orderId = 'YX' + new Date().toISOString().slice(0,10).replace(/-/g,'') + String(Math.floor(Math.random()*9000+1000));
   document.getElementById('success-order-id').textContent = orderId;
   navigateTo('page-success');
