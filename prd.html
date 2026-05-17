@@ -30,9 +30,11 @@ body {
   body { background: #FFF; }
   .page-wrapper { box-shadow: none; max-width: 100%; margin: 0; }
   .no-print { display: none !important; }
-  .page-break { page-break-before: always; }
-  table { page-break-inside: avoid; }
   h2 { page-break-after: avoid; }
+  h3 { page-break-after: avoid; }
+  table { page-break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
 }
 
 /* ========== Web ========== */
@@ -528,7 +530,6 @@ tbody tr:hover { background: #FBF5E8; }
 <p>会员首次进入小程序需完成身份核验。页面展示会员姓名、房号等脱敏信息，会员确认无误后点击「确认无误，开始点餐」进入首页。核验完成前，底部 Tab「订单」和「我的」不可用，点击弹出 Toast「请先完成身份核验」。</p>
 
 <!-- ============ 6. B端功能详述 ============ -->
-<div class="page-break"></div>
 <h2 id="s6">6. B端功能详述（管理后台）</h2>
 
 <h3 id="s6-1">6.1 仪表盘</h3>
@@ -639,7 +640,6 @@ tbody tr:hover { background: #FBF5E8; }
 </table>
 
 <!-- ============ 附录 A ============ -->
-<div class="page-break"></div>
 <h2 id="sA">附录 A：原型设计</h2>
 
 <h3>A.1 原型访问入口</h3>
