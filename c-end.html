@@ -264,13 +264,7 @@ body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-con
     <div class="left">
       <span class="title" style="font-family:var(--serif);font-size:17px;letter-spacing:0.5px;">YESTAR &middot; 臻味</span>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="navigateTo('page-cart')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.5"><use href="#ic-cart"/></svg>
-        <span id="cart-dot" style="display:none;position:absolute;top:0;right:0;width:8px;height:8px;background:var(--danger);border-radius:4px;"></span>
-      </div>
-      <div class="avatar-sm" onclick="navigateTo('page-profile')" style="cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
-    </div>
+    <div class="avatar-sm" onclick="navigateTo('page-profile')" style="cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
   </div>
 
   <div class="page-content">
@@ -385,6 +379,12 @@ body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-con
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Floating Cart -->
+  <div id="float-cart" style="display:none;position:absolute;bottom:66px;right:16px;width:52px;height:52px;border-radius:26px;background:var(--gold);box-shadow:0 4px 16px rgba(200,154,56,0.4);z-index:10;cursor:pointer;align-items:center;justify-content:center;" onclick="navigateTo('page-cart')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="1.8"><use href="#ic-cart"/></svg>
+    <span id="float-cart-count" style="position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:var(--danger);color:#FFF;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;">0</span>
   </div>
 
   <!-- Tab Bar -->
@@ -1214,6 +1214,7 @@ function addToCart(name, price) {
   const existing = cart.find(c => c.name === name);
   if (existing) { existing.qty++; }
   else { cart.push({ name, price, qty: 1 }); }
+  updateFloatCart();
   showToast('已加入购物车');
 }
 
@@ -1269,9 +1270,7 @@ function renderCart() {
     footer.style.display = 'block';
     if (countEl) countEl.textContent = cart.length + '件';
   }
-  // Update cart dot on home page nav bar
-  const dot = document.getElementById('cart-dot');
-  if (dot) { dot.style.display = cart.length > 0 ? 'block' : 'none'; }
+  updateFloatCart();
 }
 
 function renderConfirm() {
@@ -1291,8 +1290,8 @@ function renderConfirm() {
 
 function submitOrder() {
   cart = [];
-  const dot = document.getElementById('cart-dot');
-  if (dot) dot.style.display = 'none';
+  const floatCart = document.getElementById('float-cart');
+  if (floatCart) floatCart.style.display = 'none';
   const orderId = 'YX' + new Date().toISOString().slice(0,10).replace(/-/g,'') + String(Math.floor(Math.random()*9000+1000));
   document.getElementById('success-order-id').textContent = orderId;
   navigateTo('page-success');
@@ -1319,6 +1318,19 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function updateFloatCart() {
+  const floatCart = document.getElementById('float-cart');
+  const floatCount = document.getElementById('float-cart-count');
+  if (!floatCart || !floatCount) return;
+  if (cart.length > 0) {
+    floatCart.style.display = 'flex';
+    const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+    floatCount.textContent = totalQty;
+  } else {
+    floatCart.style.display = 'none';
+  }
 }
 
 // ====== Companion ======
