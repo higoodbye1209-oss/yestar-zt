@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B端原型 — 全部页面平铺展示</title>
+<title>B端原型 — 全部页面（Figma导入用）</title>
 <style>
 :root {
   --primary: #722424;
@@ -35,31 +35,42 @@
   --serif: 'Times New Roman', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
   --sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
 }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--sans); background: #E8E4DF; padding: 20px; }
-.gallery-title { text-align: center; padding: 20px 0 4px; font-family: var(--serif); font-size: 24px; color: var(--primary); }
-.gallery-sub { text-align: center; font-size: 13px; color: var(--ink-subtle); margin-bottom: 20px; }
+body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 
-.panel { width: 1280px; height: 860px; background: var(--canvas); border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin: 0 auto; }
-.page-label { text-align: center; font-size: 12px; color: var(--ink-muted); margin-bottom: 6px; }
-.page-wrapper { margin-bottom: 24px; }
+.panel {
+  width: 1280px; height: 860px; background: var(--canvas); border-radius: 12px;
+  display: flex; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
 
+/* ========== Sidebar ========== */
 .sidebar { width: 200px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
 .sidebar-logo { padding: 20px 16px; color: #FFF; font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 24px; height: 24px; }
 .sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
 .sidebar-label { padding: 12px 16px 4px; font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; font-family: var(--sans); }
-.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 400; border-left: 3px solid transparent; font-family: var(--sans); }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 400; transition: all 0.15s; border-left: 3px solid transparent; font-family: var(--sans); }
+.sidebar-item:hover { background: rgba(255,255,255,0.04); }
 .sidebar-item.active { color: var(--sidebar-active); border-left: 3px solid var(--sidebar-active); background: rgba(196,154,56,0.08); font-weight: 500; }
 .sidebar-item svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
+/* ========== Main Area ========== */
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
 .topbar .breadcrumb { font-size: 13px; color: var(--ink-muted); font-family: var(--sans); }
 .topbar .breadcrumb span { color: var(--ink); font-weight: 500; }
+.topbar .topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: var(--ink-muted); }
+.topbar-icon:hover { background: var(--canvas-b); }
+.topbar-icon svg { width: 18px; height: 18px; }
 .content { flex: 1; overflow-y: auto; padding: 20px; }
 
-.page { display: block !important; }
+/* ========== Page visibility ========== */
+.page { display: none; }
+.page.active { display: block; }
 
+/* ========== Dashboard ========== */
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 .stat-card { background: var(--surface); border-radius: 10px; padding: 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
 .stat-card .stat-label { font-size: 11px; color: var(--ink-subtle); margin-bottom: 6px; font-family: var(--sans); }
@@ -70,14 +81,18 @@ body { font-family: var(--sans); background: #E8E4DF; padding: 20px; }
 .stat-card .stat-value.gold { color: var(--gold); }
 .stat-card .stat-value.danger { color: var(--danger); }
 
+/* Panels */
 .panel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 .panel-card { background: var(--surface); border-radius: 10px; padding: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
 .panel-card .panel-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--hairline); }
 
+/* ========== Table ========== */
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { text-align: left; padding: 10px 12px; font-weight: 500; color: var(--ink-muted); font-size: 11px; border-bottom: 1px solid var(--hairline); font-family: var(--sans); }
 td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--ink); }
+tr:hover td { background: var(--canvas); }
 
+/* ========== Tags & Badges ========== */
 .tag { display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--sans); }
 .tag-green { background: var(--success-bg); color: var(--success); }
 .tag-gold { background: var(--gold-subtle); color: var(--gold); }
@@ -85,36 +100,130 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
 .tag-blue { background: var(--info-bg); color: var(--info); }
 .tag-gray { background: var(--canvas-b); color: var(--ink-muted); }
 
+.status-dot { width: 8px; height: 8px; border-radius: 4px; display: inline-block; margin-right: 6px; }
+.status-dot.green { background: var(--success); }
+.status-dot.orange { background: var(--warning); }
+.status-dot.red { background: var(--danger); }
+
+/* ========== Buttons ========== */
 .btn-gold { background: var(--gold); color: #FFF; border: none; border-radius: 20px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+.btn-gold:hover { background: var(--gold-hover); }
 .btn-gold-sm { background: var(--gold); color: #FFF; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.btn-gold-sm:hover { background: var(--gold-hover); }
 .btn-outline-sm { background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.btn-ghost-sm { background: transparent; color: var(--primary); border: none; font-size: 12px; cursor: pointer; font-family: var(--sans); }
 .btn-danger-sm { background: var(--danger); color: #FFF; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
 
+/* ========== Kanban ========== */
 .kanban-board { display: flex; gap: 12px; overflow-x: auto; }
 .kanban-col { min-width: 220px; background: var(--canvas-b); border-radius: 8px; padding: 12px; }
 .kanban-col-title { font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 10px; font-family: var(--sans); }
-.kanban-card { background: var(--surface); border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.kanban-card { background: var(--surface); border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; }
+.kanban-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .kanban-card.overdue { border-left: 3px solid var(--danger); }
 .kanban-card .kanban-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
 .kanban-card .kanban-meta { font-size: 11px; color: var(--ink-subtle); }
 
+/* ========== Member Cards ========== */
 .member-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .member-card { background: var(--surface); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
 .member-card .tier-icon { width: 48px; height: 48px; border-radius: 24px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
 .member-card .tier-name { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
 .member-card .tier-count { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--gold); }
+
+/* ========== Drawer ========== */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; }
+.drawer-overlay.show { display: block; }
+.drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 400px; background: var(--surface); z-index: 101; box-shadow: -4px 0 20px rgba(0,0,0,0.15); display: none; flex-direction: column; }
+.drawer.show { display: flex; }
+.drawer-header { padding: 16px 20px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; }
+.drawer-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.drawer-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ========== Modal ========== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--surface); border-radius: 12px; width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid var(--hairline); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ========== Form ========== */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-bottom: 4px; display: block; font-family: var(--sans); }
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid var(--hairline-strong); border-radius: 6px; font-size: 13px; font-family: var(--sans); color: var(--ink); }
+.form-input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 2px rgba(200,154,56,0.12); }
+.form-select { width: 100%; padding: 8px 12px; border: 1px solid var(--hairline-strong); border-radius: 6px; font-size: 13px; font-family: var(--sans); background: var(--surface); }
+
+/* ========== Food Card B ========== */
+.food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.food-card-b { background: var(--surface); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.05); cursor: pointer; }
+.food-card-b .food-img-b { height: 140px; background-size: cover; background-position: center; }
+.food-card-b .food-body-b { padding: 14px; }
+.food-card-b .food-name-b { font-family: var(--serif); font-size: 14px; font-weight: 600; color: var(--ink); }
+.food-card-b .food-meta-b { font-size: 11px; color: var(--ink-subtle); margin-top: 4px; }
+.food-card-b .food-price-b { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--gold); margin-top: 6px; }
+
+/* ========== Search ========== */
+.search-bar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--hairline-strong); border-radius: 20px; padding: 8px 16px; width: 280px; }
+.search-bar input { border: none; outline: none; font-size: 13px; font-family: var(--sans); width: 100%; background: transparent; }
+.search-bar svg { width: 16px; height: 16px; stroke: var(--ink-placeholder); fill: none; }
+
+/* Print badge */
+.print-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--info-bg); color: var(--info); border-radius: 12px; font-size: 11px; cursor: pointer; }
 </style>
+/* ===== Gallery Overrides ===== */
+body.gallery-body { background: #1a1a1a; padding: 20px; min-height: 100vh; display: block; }
+.gallery-header { text-align: center; padding: 20px 0 30px; }
+.gallery-title { font-family: var(--serif); font-size: 28px; color: #FFF; margin-bottom: 4px; }
+.gallery-sub { font-size: 14px; color: rgba(255,255,255,0.5); }
+.gallery-list { display: flex; flex-direction: column; align-items: center; gap: 30px; }
+.page-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.page-label { font-size: 12px; color: rgba(255,255,255,0.55); font-family: var(--sans); }
+/* Override page display for gallery */
+.panel .page { display: block !important; }
+/* Sidebar active state per page */
+
 </head>
-<body>
-<div class="gallery-title">YESTAR · 臻味 — B端全部页面</div>
-<div class="gallery-sub">共 8 个页面 · 1280×860 · 可导入 Figma 编辑</div>
-<div style="display:flex;flex-direction:column;align-items:center;gap:30px;">
-  <div class="page-wrapper"><div class="page-label"> active</div><div class="panel">
+<body class="gallery-body">
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+  <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
+  <symbol id="ic-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="ic-utensils" viewBox="0 0 24 24"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2M14 15c0 2.8 1.5 5 4 5s4-2.2 4-5v-2"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></symbol>
+  <symbol id="ic-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></symbol>
+  <symbol id="ic-bar-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="ic-trend-down" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
+  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
+  <symbol id="ic-print" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 12H4a2 2 0 00-2 2v4a2 2 0 002 2h16a2 2 0 002-2v-4a2 2 0 00-2-2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="ic-diamond" viewBox="0 0 24 24"><polygon points="12 2 15.5 9 22 9 17 14 19 22 12 17.5 5 22 7 14 2 9 8.5 9 12 2"/></symbol>
+  <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 4-4-8-4 8-6-4z"/></symbol>
+  <symbol id="ic-medal" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="ic-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+</svg>
+<div class="gallery-header">
+  <div class="gallery-title">YESTAR · 臻味 — B端管理后台</div>
+  <div class="gallery-sub">共 8 个页面 · 1280×860 · 可直接导入 Figma</div>
+</div>
+<div class="gallery-list">
+  <div class="page-wrapper">
+    <div class="page-label"> active</div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -173,13 +282,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Orders ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -226,13 +338,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Delivery ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -272,13 +387,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Food Management ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -325,13 +443,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Member ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -381,13 +502,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Proxy Order ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -428,13 +552,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Data ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -472,13 +599,16 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
     <!-- ====== PAGE: Loss Tracking ====== -->
     </div>
   </div>
-</div></div>
-  <div class="page-wrapper"><div class="page-label"></div><div class="panel">
+    </div>
+  </div>
+  <div class="page-wrapper">
+    <div class="page-label"></div>
+    <div class="panel">
   <div class="sidebar">
     <div class="sidebar-logo">YESTAR · 臻味</div>
     <div class="sidebar-nav">
       <div class="sidebar-label">管理</div>
-      <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
+      <div class="sidebar-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> 工作台</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg> 订单管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg> 配送管理</div>
       <div class="sidebar-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2"/></svg> 餐品管理</div>
@@ -559,32 +689,11 @@ td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--
       <button class="btn-gold" >保存</button>
     </div>
   </div>
+</div>
     </div>
   </div>
-</div></div>
+    </div>
+  </div>
 </div>
-<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
-  <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
-  <symbol id="ic-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
-  <symbol id="ic-utensils" viewBox="0 0 24 24"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2M14 15c0 2.8 1.5 5 4 5s4-2.2 4-5v-2"/></symbol>
-  <symbol id="ic-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></symbol>
-  <symbol id="ic-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></symbol>
-  <symbol id="ic-bar-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
-  <symbol id="ic-trend-down" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
-  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></symbol>
-  <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
-  <symbol id="ic-print" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 12H4a2 2 0 00-2 2v4a2 2 0 002 2h16a2 2 0 002-2v-4a2 2 0 00-2-2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
-  <symbol id="ic-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
-  <symbol id="ic-diamond" viewBox="0 0 24 24"><polygon points="12 2 15.5 9 22 9 17 14 19 22 12 17.5 5 22 7 14 2 9 8.5 9 12 2"/></symbol>
-  <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 4-4-8-4 8-6-4z"/></symbol>
-  <symbol id="ic-medal" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></symbol>
-  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
-  <symbol id="ic-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
-  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></symbol>
-  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
-  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
-  <symbol id="ic-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
-</svg>
 </body>
 </html>
