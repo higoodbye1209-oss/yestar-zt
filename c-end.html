@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>艺星·臻味 — C端会员点餐</title>
+<style>
+:root {
+  --primary: #722424;
+  --primary-hover: #5E1D1D;
+  --primary-subtle: #F8E9E6;
+  --gold: #C89A38;
+  --gold-hover: #B08830;
+  --gold-subtle: #FBF5E8;
+  --ink: #333333;
+  --ink-muted: #666666;
+  --ink-subtle: #888888;
+  --ink-placeholder: #AAAAAA;
+  --canvas: #F9F2ED;
+  --surface: #FFFFFF;
+  --surface-warm: #FDF8F4;
+  --hairline: #EEEEEE;
+  --hairline-strong: #DDDDDD;
+  --success: #2E7D32;
+  --success-bg: #E8F5E9;
+  --warning: #E67E22;
+  --warning-bg: #FFF7E6;
+  --danger: #C62828;
+  --danger-bg: #FFF0F0;
+  --serif: 'Times New Roman', 'Noto Serif SC', 'STSong', 'Songti SC', 'SimSun', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --tab-height: 50px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+.phone {
+  width: 375px; height: 812px; background: var(--canvas); border-radius: 32px;
+  position: relative; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+/* ========== Status Bar ========== */
+.status-bar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 12px; font-weight: 600; color: var(--ink); background: var(--surface); }
+.status-bar .time { font-family: var(--sans); }
+.status-bar .icons { display: flex; align-items: center; gap: 6px; }
+.status-bar svg { width: 15px; height: 15px; }
+
+/* ========== Nav Bar ========== */
+.nav-bar { height: 44px; display: flex; align-items: center; padding: 0 16px; background: var(--surface); justify-content: space-between; }
+.nav-bar .left { display: flex; align-items: center; gap: 8px; }
+.nav-bar .back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.nav-bar .title { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--primary); }
+.nav-bar .avatar-sm { width: 28px; height: 28px; border-radius: 14px; background: var(--primary-subtle); display: flex; align-items: center; justify-content: center; }
+
+/* ========== Page Container ========== */
+.page { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--canvas); flex-direction: column; }
+.page.active { display: flex; }
+.page-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 16px; }
+
+/* ========== Tab Bar ========== */
+.tab-bar {
+  height: var(--tab-height); padding-top: 6px; padding-bottom: var(--safe-bottom);
+  background: var(--surface); border-top: 0.5px solid var(--hairline);
+  display: flex; justify-content: space-around; align-items: flex-start;
+  flex-shrink: 0;
+}
+.tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 0 12px; min-width: 48px; }
+.tab-item .tab-icon { width: 22px; height: 22px; stroke: var(--ink-subtle); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.tab-item.active .tab-icon { stroke: var(--primary); }
+.tab-item .tab-label { font-size: 10px; font-weight: 500; color: var(--ink-subtle); line-height: 1.2; }
+.tab-item.active .tab-label { color: var(--primary); }
+
+/* ========== Shared ========== */
+.section-title { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--ink); padding: 20px 16px 8px; }
+.btn-gold { background: var(--gold); color: #FFF; border: none; border-radius: 22px; padding: 14px 32px; font-size: 15px; font-weight: 600; font-family: var(--sans); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; width: 100%; max-width: 343px; margin: 0 auto; }
+.btn-gold:active { background: var(--gold-hover); }
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 22px; padding: 10px 24px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.btn-ghost { background: transparent; color: var(--primary); border: none; font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.tag { display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--sans); }
+.tag-green { background: var(--success-bg); color: var(--success); }
+.tag-gold { background: var(--gold-subtle); color: var(--gold); }
+.tag-red { background: var(--danger-bg); color: var(--danger); }
+.tag-outline { border: 1px solid var(--hairline-strong); color: var(--ink-muted); background: transparent; }
+
+/* ========== VIP Card ========== */
+.vip-card { margin: 12px 16px; background: linear-gradient(135deg, #2D1118, #1A0A0D); border-radius: 12px; padding: 18px; color: #FFF; }
+.vip-card .vip-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.vip-card .vip-avatar { width: 44px; height: 44px; border-radius: 22px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.vip-card .vip-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 10px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+.vip-diamond-badge { background: linear-gradient(135deg, #d4af37, #f6e5a0); color: #2D1118; }
+.vip-gold-badge { background: linear-gradient(135deg, #c89a38, #f0d89c); color: #1A0A0D; }
+.vip-card .quota-row { display: flex; justify-content: space-between; font-size: 12px; }
+.vip-card .quota-bar { height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin-top: 6px; }
+.vip-card .quota-fill { height: 4px; background: var(--gold); border-radius: 2px; }
+
+/* ========== Food Card ========== */
+.food-card { background: var(--surface); border-radius: 12px; margin: 8px 16px; overflow: hidden; display: flex; box-shadow: 0 1px 8px rgba(0,0,0,0.04); cursor: pointer; }
+.food-card .food-img { width: 110px; height: 110px; flex-shrink: 0; background-size: cover; background-position: center; }
+.food-card .food-info { padding: 12px 14px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.food-card .food-name { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--ink); }
+.food-card .food-desc { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+.food-card .food-bottom { display: flex; align-items: center; justify-content: space-between; }
+.food-card .food-price { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--gold); }
+.food-card.dimmed { opacity: 0.55; }
+
+/* ========== Alert Strip ========== */
+.alert-strip { margin: 12px 16px; padding: 10px 14px; background: var(--primary-subtle); border-left: 3px solid var(--primary); border-radius: 6px; display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #722424; line-height: 1.5; }
+
+/* ========== Banner ========== */
+.banner { margin: 12px 16px; border-radius: 12px; height: 180px; background-size: cover; background-position: center; position: relative; overflow: hidden; }
+.banner .banner-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.4), transparent); }
+.banner .banner-text { position: absolute; bottom: 14px; left: 16px; color: #FFF; font-family: var(--serif); font-size: 20px; font-weight: 600; letter-spacing: 1px; }
+
+/* ========== Category Tabs ========== */
+.cat-tabs { display: flex; gap: 8px; padding: 8px 16px; overflow-x: auto; }
+.cat-tab { padding: 6px 16px; border-radius: 16px; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; border: 1px solid var(--hairline-strong); color: var(--ink-muted); background: var(--surface); font-family: var(--sans); flex-shrink: 0; }
+.cat-tab.active { background: var(--primary); color: #FFF; border-color: var(--primary); }
+
+/* ========== Detail Page ========== */
+.detail-hero { width: 100%; height: 240px; background-size: cover; background-position: center; position: relative; }
+.detail-hero .hero-back { position: absolute; top: 12px; left: 12px; width: 36px; height: 36px; border-radius: 18px; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.detail-warn-strip { margin: 12px 16px; padding: 8px 14px; background: var(--primary); color: #FFF; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.detail-warn-strip .warn-en { font-family: var(--serif); font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+.detail-info { padding: 0 16px; }
+.detail-name { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--ink); }
+.detail-tags { display: flex; gap: 6px; margin: 8px 0; }
+.detail-price-row { display: flex; align-items: baseline; gap: 8px; margin: 4px 0; }
+.detail-price { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--gold); }
+.detail-original { font-size: 13px; color: var(--ink-subtle); text-decoration: line-through; }
+.detail-section { padding: 14px 16px; }
+.detail-section h4 { font-family: var(--serif); font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.detail-section p, .detail-section li { font-size: 13px; color: var(--ink-muted); line-height: 1.6; }
+.detail-bottom-bar { padding: 12px 16px; background: var(--surface); border-top: 1px solid var(--hairline); display: flex; align-items: center; gap: 10px; }
+.detail-bottom-bar .confirm-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-muted); flex: 1; cursor: pointer; }
+.detail-bottom-bar .confirm-row input { width: 16px; height: 16px; accent-color: var(--primary); }
+.detail-bottom-bar .btn-add { flex-shrink: 0; background: var(--gold); color: #FFF; border: none; border-radius: 22px; padding: 12px 28px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+
+/* ========== Cart ========== */
+.cart-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); margin: 4px 16px; border-radius: 10px; }
+.cart-item .cart-img { width: 56px; height: 56px; border-radius: 8px; flex-shrink: 0; background-size: cover; background-position: center; }
+.cart-item .cart-info { flex: 1; }
+.cart-item .cart-name { font-size: 14px; font-weight: 500; }
+.cart-item .cart-meta { font-size: 11px; color: var(--ink-subtle); }
+.cart-item .cart-price { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--gold); }
+.cart-qty { display: flex; align-items: center; gap: 8px; }
+.cart-qty button { width: 26px; height: 26px; border-radius: 13px; border: 1px solid var(--hairline-strong); background: var(--surface); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink); }
+.cart-summary { padding: 16px; background: var(--surface); margin: 12px 16px; border-radius: 10px; }
+.cart-summary .row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+.cart-summary .total { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--gold); }
+
+/* ========== Confirm / Success ========== */
+.confirm-card { background: var(--surface); margin: 12px 16px; border-radius: 12px; padding: 16px; }
+.confirm-card .row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; }
+.success-icon { width: 64px; height: 64px; border-radius: 32px; background: var(--success-bg); display: flex; align-items: center; justify-content: center; margin: 32px auto 12px; }
+
+/* ========== Order Card ========== */
+.order-card { background: var(--surface); margin: 8px 16px; border-radius: 10px; padding: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.04); cursor: pointer; }
+.order-card .order-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.order-card .order-img { width: 48px; height: 48px; border-radius: 8px; background-size: cover; background-position: center; }
+
+/* ========== Progress ========== */
+.progress-bar { display: flex; align-items: center; justify-content: center; gap: 0; padding: 20px 16px; }
+.progress-step { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+.progress-dot { width: 14px; height: 14px; border-radius: 7px; background: var(--hairline-strong); z-index: 1; }
+.progress-dot.done { background: var(--gold); }
+.progress-dot.current { background: var(--primary); box-shadow: 0 0 0 4px var(--primary-subtle); }
+.progress-line { flex: 1; height: 2px; background: var(--hairline-strong); min-width: 40px; }
+.progress-line.done { background: var(--gold); }
+.progress-step .step-label { font-size: 10px; color: var(--ink-subtle); margin-top: 2px; }
+
+/* ========== Profile ========== */
+.profile-header { background: var(--surface); padding: 24px 16px; text-align: center; }
+.profile-avatar-lg { width: 64px; height: 64px; border-radius: 32px; background: var(--primary-subtle); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+.profile-name { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); }
+.profile-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--surface); border-bottom: 1px solid var(--hairline); cursor: pointer; }
+.profile-item .pi-left { display: flex; align-items: center; gap: 10px; }
+
+/* ========== Rating Stars ========== */
+.stars { display: flex; gap: 4px; }
+.star { width: 24px; height: 24px; cursor: pointer; stroke: var(--hairline-strong); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.star.filled { stroke: var(--gold); fill: var(--gold); }
+
+/* ========== Modal / Toast ========== */
+.toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(0,0,0,0.78); color: #FFF; padding: 12px 28px; border-radius: 22px; font-size: 14px; z-index: 1000; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+.toast.show { opacity: 1; }
+
+/* ========== Identity Verify ========== */
+.verify-center { text-align: center; padding: 40px 24px; }
+.verify-shield { width: 72px; height: 72px; margin: 0 auto 16px; background: var(--primary-subtle); border-radius: 36px; display: flex; align-items: center; justify-content: center; }
+.verify-title { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.verify-sub { font-size: 14px; color: var(--ink-muted); }
+.info-card { background: var(--surface); margin: 16px; border-radius: 12px; padding: 16px; }
+.info-card .info-row { display: flex; gap: 16px; }
+.info-card .info-col { flex: 1; }
+.info-card label { font-size: 11px; color: var(--ink-subtle); }
+.info-card .val { font-size: 15px; font-weight: 500; color: var(--ink); margin-top: 2px; font-family: var(--serif); }
+
+/* Utility */
+.text-center { text-align: center; }
+.mt-sm { margin-top: 12px; }
+.mt-md { margin-top: 16px; }
+.mb-sm { margin-bottom: 12px; }
+.px-16 { padding-left: 16px; padding-right: 16px; }
+.w-full { width: 100%; }
+.flex { display: flex; }
+.gap-sm { gap: 8px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<div class="phone" id="app">
+
+<!-- ====== SVG Icon Sprite ====== -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-dining" viewBox="0 0 24 24"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2M14 15c0 2.8 1.5 5 4 5s4-2.2 4-5v-2"/></symbol>
+  <symbol id="ic-orders" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></symbol>
+  <symbol id="ic-profile" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="ic-cart" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></symbol>
+  <symbol id="ic-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="ic-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="ic-location" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="ic-star-filled" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="ic-diamond" viewBox="0 0 24 24"><polygon points="12 2 15.5 9 22 9 17 14 19 22 12 17.5 5 22 7 14 2 9 8.5 9 12 2"/></symbol>
+  <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 4-4-8-4 8-6-4z"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="ic-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="ic-wifi" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/></symbol>
+  <symbol id="ic-battery" viewBox="0 0 24 24"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="10" x2="23" y2="14"/><line x1="19" y1="10" x2="19" y2="14"/></symbol>
+  <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
+  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="ic-heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
+</svg>
+
+<!-- ====== Toast ====== -->
+<div class="toast" id="toast"></div>
+
+<!-- ================================================================ -->
+<!-- PAGE 1: HOME / 首页 -->
+<!-- ================================================================ -->
+<div class="page active" id="page-home">
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <span class="icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg>
+    </span>
+  </div>
+  <div class="nav-bar">
+    <div class="left">
+      <span class="title" style="font-family:var(--serif);font-size:17px;letter-spacing:0.5px;">YESTAR &middot; 臻味</span>
+    </div>
+    <div class="avatar-sm" onclick="navigateTo('page-profile')" style="cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+  </div>
+
+  <div class="page-content">
+    <!-- VIP Card -->
+    <div style="padding:10px 16px 0;font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);">下午好，王女士</div>
+    <div class="vip-card">
+      <div class="vip-top">
+        <div class="vip-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-family:var(--serif);font-size:15px;font-weight:600;">王雅芝</span>
+            <span class="vip-badge vip-diamond-badge">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#ic-diamond"/></svg>
+              钻石会员
+            </span>
+          </div>
+          <div style="font-size:11px;opacity:0.65;margin-top:2px;">PRIVILEGE STATUS &middot; 有效期至 2027.03</div>
+        </div>
+      </div>
+      <div class="quota-row" style="margin-top:6px;">
+        <span style="opacity:0.7;">剩余免费额度</span>
+        <span style="font-family:var(--serif);font-weight:700;color:var(--gold);">&#165;380</span>
+      </div>
+      <div class="quota-bar"><div class="quota-fill" style="width:76%;"></div></div>
+    </div>
+
+    <!-- Care Alert -->
+    <div class="alert-strip" style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#722424" stroke-width="1.8" style="flex-shrink:0;"><use href="#ic-alert"/></svg>
+        <span style="font-size:12px;">术后护理提醒</span>
+      </div>
+      <span style="font-family:var(--serif);font-size:10px;opacity:0.6;">POST&#8209;OP CARE</span>
+    </div>
+
+    <!-- Banner: 今日推荐套餐 -->
+    <div class="banner" style="background-image: url('原型_图片/food1.png'); background-size: cover; background-position: center; cursor:pointer;" onclick="navigateTo('page-recommend')">
+      <div class="banner-overlay"></div>
+      <div class="banner-text">今日推荐套餐</div>
+      <div style="position:absolute;top:12px;right:14px;background:var(--gold);color:#FFF;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;">查看详情</div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="cat-tabs">
+      <div class="cat-tab active" onclick="switchCat(this,'all')">全部</div>
+      <div class="cat-tab" onclick="switchCat(this,'soup')">滋补汤</div>
+      <div class="cat-tab" onclick="switchCat(this,'congee')">粥</div>
+      <div class="cat-tab" onclick="switchCat(this,'salad')">沙拉</div>
+    </div>
+
+    <!-- Food Card 1: 术后修护套餐 -->
+    <div class="food-card" onclick="navigateTo('page-detail')">
+      <div class="food-img" style="background-image: url('原型_图片/food2.png'); background-size: cover; background-position: center;"></div>
+      <div class="food-info">
+        <div class="food-name">术后修护套餐</div>
+        <div class="food-desc">花胶鸡汤 &middot; 清润滋补</div>
+        <div class="food-bottom">
+          <span class="food-price">&#165;128</span>
+          <span class="tag tag-green">术后推荐</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Food Card 2: 燕窝粥 -->
+    <div class="food-card" onclick="navigateTo('page-detail2')">
+      <div class="food-img" style="background-image: url('原型_图片/food3.png'); background-size: cover; background-position: center;"></div>
+      <div class="food-info">
+        <div class="food-name">燕窝枸杞粥</div>
+        <div class="food-desc">金边砂锅慢炖 &middot; 温润养颜</div>
+        <div class="food-bottom">
+          <span class="food-price">&#165;168</span>
+          <span class="tag tag-gold">钻石专属</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Food Card 3: 胶原汤 -->
+    <div class="food-card" onclick="navigateTo('page-detail3')">
+      <div class="food-img" style="background-image: url('原型_图片/food4.png'); background-size: cover; background-position: center;"></div>
+      <div class="food-info">
+        <div class="food-name">双炖花胶胶原汤</div>
+        <div class="food-desc">鱼胶滋补 &middot; 深炖浓汤</div>
+        <div class="food-bottom">
+          <span class="food-price">&#165;198</span>
+          <span class="tag tag-green">术后推荐</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Food Card 4: 泰式鲜虾沙拉 -->
+    <div class="food-card" onclick="navigateTo('page-detail4')">
+      <div class="food-img" style="background-image: url('原型_图片/food5.png'); background-size: cover; background-position: center;"></div>
+      <div class="food-info">
+        <div class="food-name">泰式香辣鲜虾沙拉</div>
+        <div class="food-desc">开背虎虾 &middot; 酸辣开胃</div>
+        <div class="food-bottom">
+          <span class="food-price">&#165;88</span>
+          <span class="tag tag-outline">高蛋白轻食</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allergy trigger food -->
+    <div class="food-card dimmed" onclick="showToast('根据过敏记录，该餐品含麸质，已自动提示')">
+      <div class="food-img" style="background-image: url('原型_图片/food6.png'); background-size: cover; background-position: center;"></div>
+      <div class="food-info">
+        <div class="food-name" style="color:var(--danger);">麻酱拌面</div>
+        <div class="food-desc">含麸质 &middot; 过敏提醒</div>
+        <div class="food-bottom">
+          <span class="food-price">&#165;38</span>
+          <span class="tag tag-red">含过敏原</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <div class="tab-item active" onclick="navigateTo('page-home')">
+      <svg class="tab-icon"><use href="#ic-dining"/></svg>
+      <span class="tab-label">点餐</span>
+    </div>
+    <div class="tab-item" id="tab-orders" onclick="navigateTo('page-orders')">
+      <svg class="tab-icon"><use href="#ic-orders"/></svg>
+      <span class="tab-label">订单</span>
+    </div>
+    <div class="tab-item" id="tab-profile" onclick="navigateTo('page-profile')">
+      <svg class="tab-icon"><use href="#ic-profile"/></svg>
+      <span class="tab-label">我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE: 今日推荐套餐详情 -->
+<!-- ================================================================ -->
+<div class="page" id="page-recommend">
+  <div class="detail-hero" style="background-image: url('原型_图片/food1.png'); background-size: cover; background-position: center;">
+    <div class="hero-back" onclick="navigateTo('page-home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><use href="#ic-chevron-left"/></svg></div>
+  </div>
+  <div class="page-content">
+    <div class="detail-info">
+      <div class="detail-name">今日推荐套餐</div>
+      <div style="font-size:13px;color:var(--ink-muted);margin-top:4px;">主厨精选 · 术后修护专属搭配</div>
+      <div class="detail-tags" style="margin-top:8px;">
+        <span class="tag tag-gold">会员专属</span>
+        <span class="tag tag-green">术后推荐</span>
+      </div>
+    </div>
+
+    <!-- Included items -->
+    <div style="padding:16px;">
+      <div style="font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;">套餐包含</div>
+
+      <div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+        <div style="width:48px;height:48px;border-radius:8px;background-image:url('原型_图片/food2.png');background-size:cover;background-position:center;flex-shrink:0;"></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:500;">术后修护套餐</div><div style="font-size:11px;color:var(--ink-subtle);">花胶鸡汤 · 清润滋补</div></div>
+        <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;128</span>
+      </div>
+
+      <div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+        <div style="width:48px;height:48px;border-radius:8px;background-image:url('原型_图片/food3.png');background-size:cover;background-position:center;flex-shrink:0;"></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:500;">燕窝枸杞粥</div><div style="font-size:11px;color:var(--ink-subtle);">金边砂锅慢炖 · 温润养颜</div></div>
+        <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;168</span>
+      </div>
+
+      <div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,0.03);">
+        <div style="width:48px;height:48px;border-radius:8px;background-image:url('原型_图片/food5.png');background-size:cover;background-position:center;flex-shrink:0;"></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:500;">泰式香辣鲜虾沙拉</div><div style="font-size:11px;color:var(--ink-subtle);">开背虎虾 · 酸辣开胃</div></div>
+        <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;88</span>
+      </div>
+
+      <!-- Total -->
+      <div style="background:var(--surface-warm);border-radius:10px;padding:14px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:12px;color:var(--ink-muted);">套餐总价</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:2px;">
+            <span style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--gold);">&#165;384</span>
+            <span style="font-size:12px;color:var(--ink-subtle);text-decoration:line-through;">&#165;534</span>
+          </div>
+        </div>
+        <span class="tag tag-gold" style="font-size:12px;padding:4px 10px;">会员省 &#165;150</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="detail-bottom-bar" style="justify-content:center;">
+    <button class="btn-add" onclick="addSetToCart()" style="width:100%;">一键加入购物车 &#165;384</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 2: DETAIL 1 — 术后修护套餐 -->
+<!-- ================================================================ -->
+<div class="page" id="page-detail">
+  <div class="detail-hero" style="background-image: url('原型_图片/food2.png'); background-size: cover; background-position: center;">
+    <div class="hero-back" onclick="navigateTo('page-home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><use href="#ic-chevron-left"/></svg></div>
+    <div style="position:absolute;top:12px;right:12px;display:flex;gap:8px;">
+      <div class="avatar-sm" style="width:28px;height:28px;border-radius:14px;background:rgba(255,255,255,0.8);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="detail-warn-strip">
+      <span>术后恢复期 &middot; 忌辛辣刺激</span>
+      <span class="warn-en">POST&#8209;OP RESTRICTED</span>
+    </div>
+
+    <div class="detail-info">
+      <div class="detail-name">术后修护套餐</div>
+      <div class="detail-tags">
+        <span class="tag tag-green">术后推荐</span>
+        <span class="tag tag-gold">钻石专享价</span>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-price">&#165;128</span>
+        <span class="detail-original">&#165;188</span>
+        <span style="font-size:11px;color:var(--gold);">会员价</span>
+      </div>
+    </div>
+
+    <div class="alert-strip" style="margin-top:16px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#722424" stroke-width="1.8" style="flex-shrink:0;margin-top:1px;"><use href="#ic-info"/></svg>
+      <span>术后48小时内建议选择清淡温凉餐食。本套餐已根据您的护理记录筛选，含优质蛋白，避免诱发炎症反应。</span>
+    </div>
+
+    <div class="detail-section">
+      <h4>餐品描述</h4>
+      <p>精选走地鸡慢炖4小时，搭配深海花胶，汤汁清润浓郁。宽口米白陶瓷汤碗呈浅琥珀色清汤，配烫青菜与迷你蘸料碗。低钠养生，术后滋补首选。</p>
+    </div>
+    <div class="detail-section">
+      <h4>食材与过敏原</h4>
+      <p>走地鸡、深海花胶、枸杞、姜片、青菜。本餐品不含麸质、乳制品。</p>
+    </div>
+    <div class="detail-section">
+      <h4>营养参数</h4>
+      <p>热量 285 kcal &middot; 蛋白质 32g &middot; 脂肪 8g &middot; 碳水 18g</p>
+    </div>
+  </div>
+
+  <div class="detail-bottom-bar">
+    <label class="confirm-row">
+      <input type="checkbox" id="confirm1"> 我已阅读护理建议
+    </label>
+    <button class="btn-add" onclick="addToCart('术后修护套餐',128)">加入购物车</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 3: DETAIL 2 — 燕窝枸杞粥 -->
+<!-- ================================================================ -->
+<div class="page" id="page-detail2">
+  <div class="detail-hero" style="background-image: url('原型_图片/food3.png'); background-size: cover; background-position: center;">
+    <div class="hero-back" onclick="navigateTo('page-home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><use href="#ic-chevron-left"/></svg></div>
+  </div>
+  <div class="page-content">
+    <div class="detail-warn-strip">
+      <span>适宜术后温补</span>
+      <span class="warn-en">POST&#8209;OP SAFE</span>
+    </div>
+    <div class="detail-info">
+      <div class="detail-name">燕窝枸杞粥</div>
+      <div class="detail-tags">
+        <span class="tag tag-gold">钻石专属</span>
+        <span class="tag tag-green">术后推荐</span>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-price">&#165;168</span>
+        <span class="detail-original">&#165;228</span>
+        <span style="font-size:11px;color:var(--gold);">会员价</span>
+      </div>
+    </div>
+    <div class="detail-section"><h4>餐品描述</h4><p>金边浮雕双耳陶瓷砂锅盛放奶白色绵密燕窝白米粥，点缀鲜红枸杞。慢炖至稠，温润养颜，贵气精致。</p></div>
+    <div class="detail-section"><h4>食材与过敏原</h4><p>燕窝、有机白米、宁夏枸杞、冰糖。不含麸质、乳制品、坚果。</p></div>
+    <div class="detail-section"><h4>营养参数</h4><p>热量 220 kcal &middot; 蛋白质 14g &middot; 脂肪 3g &middot; 碳水 35g</p></div>
+  </div>
+  <div class="detail-bottom-bar">
+    <label class="confirm-row"><input type="checkbox"> 我已阅读护理建议</label>
+    <button class="btn-add" onclick="addToCart('燕窝枸杞粥',168)">加入购物车</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 4: DETAIL 3 — 双炖花胶胶原汤 -->
+<!-- ================================================================ -->
+<div class="page" id="page-detail3">
+  <div class="detail-hero" style="background-image: url('原型_图片/food4.png'); background-size: cover; background-position: center;">
+    <div class="hero-back" onclick="navigateTo('page-home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><use href="#ic-chevron-left"/></svg></div>
+  </div>
+  <div class="page-content">
+    <div class="detail-warn-strip">
+      <span>高蛋白滋补 &middot; 术后72小时后推荐</span>
+      <span class="warn-en">RICH NUTRITION</span>
+    </div>
+    <div class="detail-info">
+      <div class="detail-name">双炖花胶胶原汤</div>
+      <div class="detail-tags">
+        <span class="tag tag-green">术后推荐</span>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-price">&#165;198</span>
+        <span class="detail-original">&#165;268</span>
+        <span style="font-size:11px;color:var(--gold);">会员价</span>
+      </div>
+    </div>
+    <div class="detail-section"><h4>餐品描述</h4><p>深灰哑光宽口砂锅盛放金褐色浓郁高汤，整齐摆放嫩白鱼胶与花胶，点缀翠绿香菜。暗调光影，沉稳奢华，双炖工艺锁住胶原精华。</p></div>
+    <div class="detail-section"><h4>食材与过敏原</h4><p>深海鱼胶、花胶、猪骨、枸杞、香菜。含鱼类成分。</p></div>
+    <div class="detail-section"><h4>营养参数</h4><p>热量 310 kcal &middot; 蛋白质 42g &middot; 脂肪 12g &middot; 碳水 8g</p></div>
+  </div>
+  <div class="detail-bottom-bar">
+    <label class="confirm-row"><input type="checkbox"> 我已阅读护理建议</label>
+    <button class="btn-add" onclick="addToCart('双炖花胶胶原汤',198)">加入购物车</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 5: DETAIL 4 — 泰式鲜虾沙拉 -->
+<!-- ================================================================ -->
+<div class="page" id="page-detail4">
+  <div class="detail-hero" style="background-image: url('原型_图片/food5.png'); background-size: cover; background-position: center;">
+    <div class="hero-back" onclick="navigateTo('page-home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="2"><use href="#ic-chevron-left"/></svg></div>
+  </div>
+  <div class="page-content">
+    <div class="detail-warn-strip">
+      <span>微辣口感 &middot; 术后一周后可选用</span>
+      <span class="warn-en">MILD SPICY</span>
+    </div>
+    <div class="detail-info">
+      <div class="detail-name">泰式香辣鲜虾沙拉</div>
+      <div class="detail-tags">
+        <span class="tag tag-outline">高蛋白轻食</span>
+      </div>
+      <div class="detail-price-row">
+        <span class="detail-price">&#165;88</span>
+        <span class="detail-original">&#165;118</span>
+        <span style="font-size:11px;color:var(--gold);">会员价</span>
+      </div>
+    </div>
+    <div class="detail-section"><h4>餐品描述</h4><p>纯白宽边圆盘盛放泰式鲜虾沙拉，多只橙红开背虎虾为主料，搭配透明粉丝、鲜红小米辣、翠绿香菜，淋琥珀色酸辣酱汁。色彩鲜亮，酸辣开胃。</p></div>
+    <div class="detail-section"><h4>食材与过敏原</h4><p>虎虾、粉丝、小米辣、香菜、柠檬汁、鱼露。含虾、鱼类。不含麸质。</p></div>
+    <div class="detail-section"><h4>营养参数</h4><p>热量 195 kcal &middot; 蛋白质 28g &middot; 脂肪 6g &middot; 碳水 10g</p></div>
+  </div>
+  <div class="detail-bottom-bar">
+    <label class="confirm-row"><input type="checkbox"> 我已阅读护理建议</label>
+    <button class="btn-add" onclick="addToCart('泰式香辣鲜虾沙拉',88)">加入购物车</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 6: CART / 购物车 -->
+<!-- ================================================================ -->
+<div class="page" id="page-cart">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">购物车</span>
+    </div>
+    <span id="cart-count" style="font-size:13px;color:var(--ink-subtle);"></span>
+  </div>
+  <div class="page-content" id="cart-items"></div>
+  <div style="padding:16px;" id="cart-footer">
+    <div class="cart-summary" id="cart-summary"></div>
+    <button class="btn-gold mt-sm" onclick="navigateTo('page-confirm')">去结算</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 7: CONFIRM / 确认下单 -->
+<!-- ================================================================ -->
+<div class="page" id="page-confirm">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-cart')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">确认下单</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="confirm-card">
+      <div style="font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;">配送信息</div>
+      <div class="row"><span>姓名</span><span>王雅芝</span></div>
+      <div class="row"><span>病房/床位</span><span>VIP 302 &middot; 床A</span></div>
+      <div class="row"><span>配送时间</span><span>预计 30分钟内</span></div>
+    </div>
+    <div class="confirm-card">
+      <div style="font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink);margin-bottom:10px;">订单明细</div>
+      <div id="confirm-items"></div>
+      <div style="border-top:1px solid var(--hairline);margin-top:8px;padding-top:8px;" class="row">
+        <span>合计</span>
+        <span class="cart-summary-total" style="font-family:var(--serif);font-size:17px;font-weight:700;color:var(--gold);"></span>
+      </div>
+    </div>
+    <div style="padding:16px;">
+      <button class="btn-gold" onclick="submitOrder()">确认下单</button>
+      <button class="btn-outline mt-sm" style="display:block;margin:12px auto 0;" onclick="navigateTo('page-cart')">返回修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 8: SUCCESS / 下单成功 -->
+<!-- ================================================================ -->
+<div class="page" id="page-success">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="page-content text-center">
+    <div class="success-icon">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><use href="#ic-check"/></svg>
+    </div>
+    <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:8px;">下单成功</div>
+    <div style="font-size:13px;color:var(--ink-muted);">您的餐品正在准备中，预计30分钟内送达</div>
+    <div style="font-size:12px;color:var(--ink-subtle);margin-top:4px;">订单编号：<span id="success-order-id" style="font-family:monospace;">YX202605170042</span></div>
+    <button class="btn-gold mt-md" style="margin-top:24px;" onclick="navigateTo('page-orders')">查看订单</button>
+    <button class="btn-ghost mt-sm" style="display:block;margin:12px auto;" onclick="navigateTo('page-home')">返回首页</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 9: ORDERS / 订单列表 -->
+<!-- ================================================================ -->
+<div class="page" id="page-orders">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar"><div class="left"><span class="title">我的订单</span></div></div>
+  <div class="page-content" id="orders-list">
+    <div class="cat-tabs">
+      <div class="cat-tab active" onclick="switchCat(this,'all')">全部</div>
+      <div class="cat-tab" onclick="switchCat(this,'active')">进行中</div>
+      <div class="cat-tab" onclick="switchCat(this,'done')">已完成</div>
+    </div>
+    <div class="order-card" onclick="navigateTo('page-order-detail')">
+      <div class="order-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="order-img" style="background-image:url('原型_图片/food2.png');background-size:cover;background-position:center;"></div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">术后修护套餐</div>
+            <div style="font-size:11px;color:var(--ink-subtle);">今天 14:32</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;128</span>
+          <div><span class="tag tag-green">配送中</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="order-card" onclick="navigateTo('page-order-detail-done')">
+      <div class="order-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="order-img" style="background:url('原型_图片/food3.png') center/cover;"></div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">燕窝枸杞粥</div>
+            <div style="font-size:11px;color:var(--ink-subtle);">昨天 12:15</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;168</span>
+          <div><span class="tag tag-outline">已完成</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="order-card" onclick="navigateTo('page-order-detail-done')">
+      <div class="order-top">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="order-img" style="background:url('原型_图片/food4.png') center/cover;"></div>
+          <div>
+            <div style="font-size:14px;font-weight:500;">双炖花胶胶原汤</div>
+            <div style="font-size:11px;color:var(--ink-subtle);">05/15 18:42</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;198</span>
+          <div><span class="tag tag-outline">已完成</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="navigateTo('page-home')">
+      <svg class="tab-icon"><use href="#ic-dining"/></svg><span class="tab-label">点餐</span>
+    </div>
+    <div class="tab-item active">
+      <svg class="tab-icon"><use href="#ic-orders"/></svg><span class="tab-label">订单</span>
+    </div>
+    <div class="tab-item" onclick="navigateTo('page-profile')">
+      <svg class="tab-icon"><use href="#ic-profile"/></svg><span class="tab-label">我的</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 10: ORDER DETAIL (active) -->
+<!-- ================================================================ -->
+<div class="page" id="page-order-detail">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-orders')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">订单详情</span>
+    </div>
+    <span style="font-size:11px;color:var(--ink-subtle);">YX202605170042</span>
+  </div>
+  <div class="page-content">
+    <!-- Order banner -->
+    <div class="banner" style="height:160px; background-image:url('原型_图片/food2.png'); background-size:cover; background-position:center;">
+      <div class="banner-overlay"></div>
+      <div class="banner-text">准备中</div>
+    </div>
+    <!-- Delivery info: side by side cards -->
+    <div style="display:flex;gap:8px;padding:12px 16px;">
+      <div class="confirm-card" style="flex:1;text-align:center;margin:0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-clock"/></svg>
+        <div style="font-size:11px;color:var(--ink-subtle);margin-top:4px;">预计送达</div>
+        <div style="font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink);">15:00</div>
+      </div>
+      <div class="confirm-card" style="flex:1;text-align:center;margin:0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-truck"/></svg>
+        <div style="font-size:11px;color:var(--ink-subtle);margin-top:4px;">配送至</div>
+        <div style="font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink);">VIP 302-A</div>
+      </div>
+    </div>
+    <!-- Progress -->
+    <div class="progress-bar">
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">已下单</span></div>
+      <div class="progress-line done"></div>
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">备餐中</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step"><div class="progress-dot current"></div><span class="step-label">配送中</span></div>
+      <div class="progress-line"></div>
+      <div class="progress-step"><div class="progress-dot"></div><span class="step-label">已送达</span></div>
+    </div>
+    <!-- Order summary -->
+    <div class="confirm-card">
+      <div style="display:flex;gap:12px;">
+        <div style="width:56px;height:56px;border-radius:8px;background-image:url('原型_图片/food2.png');background-size:cover;background-position:center;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:500;">术后修护套餐</div>
+          <div style="font-size:11px;color:var(--ink-subtle);">数量：1</div>
+          <div style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);margin-top:4px;">&#165;128</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:8px 16px;">
+      <button class="btn-outline" style="flex:1;" onclick="showToast('已联系客服')">联系客服</button>
+      <button class="btn-gold" style="flex:1;margin:0;max-width:none;" onclick="navigateTo('page-rate')">确认收货</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="navigateTo('page-home')"><svg class="tab-icon"><use href="#ic-dining"/></svg><span class="tab-label">点餐</span></div>
+    <div class="tab-item active"><svg class="tab-icon"><use href="#ic-orders"/></svg><span class="tab-label">订单</span></div>
+    <div class="tab-item" onclick="navigateTo('page-profile')"><svg class="tab-icon"><use href="#ic-profile"/></svg><span class="tab-label">我的</span></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 11: ORDER DETAIL (done) -->
+<!-- ================================================================ -->
+<div class="page" id="page-order-detail-done">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-orders')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">订单详情</span>
+    </div>
+    <span class="tag tag-outline">已完成</span>
+  </div>
+  <div class="page-content">
+    <div class="banner" style="height:160px; background:url('原型_图片/food3.png') center/cover;">
+      <div class="banner-overlay"></div>
+      <div class="banner-text">已送达</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">已下单</span></div>
+      <div class="progress-line done"></div>
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">备餐中</span></div>
+      <div class="progress-line done"></div>
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">配送中</span></div>
+      <div class="progress-line done"></div>
+      <div class="progress-step"><div class="progress-dot done"></div><span class="step-label">已送达</span></div>
+    </div>
+    <div class="confirm-card">
+      <div style="display:flex;gap:12px;">
+        <div style="width:56px;height:56px;border-radius:8px;background:url('原型_图片/food3.png') center/cover;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:500;">燕窝枸杞粥</div>
+          <div style="font-size:11px;color:var(--ink-subtle);">数量：1</div>
+          <div style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);margin-top:4px;">&#165;168</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;padding:8px 16px;">
+      <button class="btn-outline" style="flex:1;" onclick="navigateTo('page-rate')">评价</button>
+      <button class="btn-ghost" style="flex:1;" onclick="showToast('已加入购物车')">再来一单</button>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="navigateTo('page-home')"><svg class="tab-icon"><use href="#ic-dining"/></svg><span class="tab-label">点餐</span></div>
+    <div class="tab-item active"><svg class="tab-icon"><use href="#ic-orders"/></svg><span class="tab-label">订单</span></div>
+    <div class="tab-item" onclick="navigateTo('page-profile')"><svg class="tab-icon"><use href="#ic-profile"/></svg><span class="tab-label">我的</span></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 12: RATE -->
+<!-- ================================================================ -->
+<div class="page" id="page-rate">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="historyBack()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">评价</span>
+    </div>
+  </div>
+  <div class="page-content text-center" style="padding-top:40px;">
+    <div style="font-family:var(--serif);font-size:18px;font-weight:600;color:var(--ink);margin-bottom:16px;">为您的餐品评分</div>
+    <div class="stars" style="justify-content:center;" id="rate-stars">
+      <svg class="star" data-idx="1" onclick="rateStar(1)" viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      <svg class="star" data-idx="2" onclick="rateStar(2)" viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      <svg class="star" data-idx="3" onclick="rateStar(3)" viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      <svg class="star" data-idx="4" onclick="rateStar(4)" viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+      <svg class="star" data-idx="5" onclick="rateStar(5)" viewBox="0 0 24 24"><use href="#ic-star"/></svg>
+    </div>
+    <button class="btn-gold mt-md" style="margin-top:24px;" onclick="showToast('感谢您的评价');setTimeout(()=>navigateTo('page-orders'),600)">提交评价</button>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 13: PROFILE / 我的 -->
+<!-- ================================================================ -->
+<div class="page" id="page-profile">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar"><div class="left"><span class="title">我的</span></div></div>
+  <div class="page-content">
+    <div class="profile-header">
+      <div class="profile-avatar-lg"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+      <div class="profile-name">王雅芝</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;">
+        <span class="vip-badge vip-diamond-badge" style="font-size:10px;">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="none"><use href="#ic-diamond"/></svg>
+          钻石会员
+        </span>
+      </div>
+      <div style="font-size:12px;color:var(--ink-subtle);margin-top:4px;">VIP 302 &middot; 床A</div>
+    </div>
+
+    <!-- Quick stats -->
+    <div style="display:flex;gap:0;margin:12px 16px;background:var(--surface);border-radius:12px;overflow:hidden;">
+      <div style="flex:1;text-align:center;padding:14px 8px;border-right:1px solid var(--hairline);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--gold);">&#165;380</div>
+        <div style="font-size:10px;color:var(--ink-subtle);margin-top:2px;">剩余额度</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 8px;border-right:1px solid var(--hairline);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--ink);">12</div>
+        <div style="font-size:10px;color:var(--ink-subtle);margin-top:2px;">用餐次数</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:14px 8px;">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--success);">5</div>
+        <div style="font-size:10px;color:var(--ink-subtle);margin-top:2px;">术后天数</div>
+      </div>
+    </div>
+
+    <!-- Menu items -->
+    <div style="margin-top:4px;">
+      <div class="profile-item" onclick="navigateTo('page-dining-history')">
+        <div class="pi-left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5"><use href="#ic-clipboard"/></svg>用餐记录</div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5"><use href="#ic-chevron-right"/></svg>
+      </div>
+      <div class="profile-item" onclick="navigateTo('page-allergy')">
+        <div class="pi-left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5"><use href="#ic-alert"/></svg>过敏源管理</div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5"><use href="#ic-chevron-right"/></svg>
+      </div>
+      <div class="profile-item" onclick="navigateTo('page-preference')">
+        <div class="pi-left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5"><use href="#ic-heart"/></svg>饮食偏好</div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5"><use href="#ic-chevron-right"/></svg>
+      </div>
+      <div class="profile-item" onclick="showToast('当前: VIP 302 · 床A')">
+        <div class="pi-left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5"><use href="#ic-home"/></svg>常用房号</div>
+        <div style="font-size:12px;color:var(--ink-subtle);">VIP 302 · 床A</div>
+      </div>
+      <div class="profile-item" onclick="navigateTo('page-companion')">
+        <div class="pi-left"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-muted)" stroke-width="1.5"><use href="#ic-profile"/></svg>陪同点餐</div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5"><use href="#ic-chevron-right"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item" onclick="navigateTo('page-home')"><svg class="tab-icon"><use href="#ic-dining"/></svg><span class="tab-label">点餐</span></div>
+    <div class="tab-item" onclick="navigateTo('page-orders')"><svg class="tab-icon"><use href="#ic-orders"/></svg><span class="tab-label">订单</span></div>
+    <div class="tab-item active"><svg class="tab-icon"><use href="#ic-profile"/></svg><span class="tab-label">我的</span></div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 14: ALLERGY -->
+<!-- ================================================================ -->
+<div class="page" id="page-allergy">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">过敏原管理</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="confirm-card">
+      <div style="font-size:13px;color:var(--ink-muted);margin-bottom:12px;">根据您的院内护理记录，系统已自动标记以下过敏原，点餐时将自动提示</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="tag tag-red">麸质</span>
+        <span class="tag tag-red">虾</span>
+        <span class="tag tag-outline" style="opacity:0.5;">花生</span>
+        <span class="tag tag-outline" style="opacity:0.5;">牛奶</span>
+      </div>
+    </div>
+    <div class="alert-strip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#722424" stroke-width="1.8" style="flex-shrink:0;margin-top:1px;"><use href="#ic-info"/></svg>
+      <span>过敏原信息来自您的电子病历，如需更新请联系护理站</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE: 用餐记录 -->
+<!-- ================================================================ -->
+<div class="page" id="page-dining-history">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">用餐记录</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="order-card"><div class="order-top">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="order-img" style="background-image:url('原型_图片/food2.png');background-size:cover;background-position:center;"></div>
+        <div><div style="font-size:14px;font-weight:500;">术后修护套餐</div><div style="font-size:11px;color:var(--ink-subtle);">今天 14:32</div></div>
+      </div>
+      <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;128</span>
+    </div></div>
+    <div class="order-card"><div class="order-top">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="order-img" style="background-image:url('原型_图片/food3.png');background-size:cover;background-position:center;"></div>
+        <div><div style="font-size:14px;font-weight:500;">燕窝枸杞粥</div><div style="font-size:11px;color:var(--ink-subtle);">昨天 12:15</div></div>
+      </div>
+      <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;168</span>
+    </div></div>
+    <div class="order-card"><div class="order-top">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="order-img" style="background-image:url('原型_图片/food4.png');background-size:cover;background-position:center;"></div>
+        <div><div style="font-size:14px;font-weight:500;">双炖花胶胶原汤</div><div style="font-size:11px;color:var(--ink-subtle);">05/15 18:42</div></div>
+      </div>
+      <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;198</span>
+    </div></div>
+    <div class="order-card"><div class="order-top">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="order-img" style="background-image:url('原型_图片/food5.png');background-size:cover;background-position:center;"></div>
+        <div><div style="font-size:14px;font-weight:500;">泰式香辣鲜虾沙拉</div><div style="font-size:11px;color:var(--ink-subtle);">05/14 11:20</div></div>
+      </div>
+      <span style="font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);">&#165;88</span>
+    </div></div>
+    <div style="text-align:center;padding:20px;font-size:12px;color:var(--ink-subtle);">仅显示最近7天记录</div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE: 饮食偏好 -->
+<!-- ================================================================ -->
+<div class="page" id="page-preference">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">饮食偏好</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="confirm-card">
+      <div style="font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;">口味偏好</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="tag tag-green" style="padding:6px 14px;font-size:12px;">清淡</span>
+        <span class="tag tag-outline" style="padding:6px 14px;font-size:12px;">微辣</span>
+        <span class="tag tag-outline" style="padding:6px 14px;font-size:12px;">酸辣</span>
+        <span class="tag tag-outline" style="padding:6px 14px;font-size:12px;">鲜美</span>
+      </div>
+    </div>
+    <div class="confirm-card">
+      <div style="font-family:var(--serif);font-size:14px;font-weight:600;color:var(--ink);margin-bottom:10px;">忌口食材</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <span class="tag tag-red" style="padding:6px 14px;font-size:12px;">麸质</span>
+        <span class="tag tag-red" style="padding:6px 14px;font-size:12px;">虾</span>
+        <span class="tag tag-outline" style="padding:6px 14px;font-size:12px;opacity:0.5;">花生</span>
+        <span class="tag tag-outline" style="padding:6px 14px;font-size:12px;opacity:0.5;">牛奶</span>
+      </div>
+    </div>
+    <div class="alert-strip">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#722424" stroke-width="1.8" style="flex-shrink:0;margin-top:1px;"><use href="#ic-info"/></svg>
+      <span>偏好的修改将在下次点餐时生效，过敏原信息由电子病历同步</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 15: COMPANION / 陪同点餐 -->
+<!-- ================================================================ -->
+<div class="page" id="page-companion">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left">
+      <div class="back" onclick="navigateTo('page-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-chevron-left"/></svg></div>
+      <span class="title">陪同点餐</span>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="confirm-card">
+      <div style="font-size:13px;color:var(--ink-muted);margin-bottom:12px;">陪同人员可为您代点餐食，餐品将配送至您的病房</div>
+
+      <!-- Current companions list -->
+      <div id="companion-list">
+        <div class="companion-row" id="comp-1" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--canvas);border-radius:8px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:18px;background:var(--primary-subtle);display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:500;">王建国</div>
+              <div style="font-size:11px;color:var(--ink-subtle);">父亲 · 138****6789</div>
+            </div>
+          </div>
+          <button onclick="removeCompanion('comp-1')" style="background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:4px 8px;">删除</button>
+        </div>
+        <div class="companion-row" id="comp-2" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--canvas);border-radius:8px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;border-radius:18px;background:var(--primary-subtle);display:flex;align-items:center;justify-content:center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:500;">李秀兰</div>
+              <div style="font-size:11px;color:var(--ink-subtle);">母亲 · 139****8901</div>
+            </div>
+          </div>
+          <button onclick="removeCompanion('comp-2')" style="background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:4px 8px;">删除</button>
+        </div>
+      </div>
+
+      <!-- Add companion form -->
+      <div style="border:1px dashed var(--hairline-strong);border-radius:8px;padding:12px;text-align:center;cursor:pointer;margin-top:4px;" id="add-comp-btn" onclick="showAddCompanionForm()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-subtle)" stroke-width="1.5"><use href="#ic-plus"/></svg>
+        <div style="font-size:12px;color:var(--ink-subtle);margin-top:4px;">添加陪护人</div>
+      </div>
+
+      <div id="add-comp-form" style="display:none;margin-top:8px;">
+        <div class="form-group"><label class="form-label" style="font-size:11px;color:var(--ink-subtle);">姓名</label><input class="form-input" id="comp-name" placeholder="请输入姓名" style="padding:8px 12px;border:1px solid var(--hairline-strong);border-radius:6px;width:100%;font-size:13px;"></div>
+        <div class="form-group"><label class="form-label" style="font-size:11px;color:var(--ink-subtle);">关系</label><select class="form-select" id="comp-relation" style="padding:8px 12px;border:1px solid var(--hairline-strong);border-radius:6px;width:100%;font-size:13px;"><option>父亲</option><option>母亲</option><option>配偶</option><option>子女</option><option>其他亲属</option></select></div>
+        <div class="form-group"><label class="form-label" style="font-size:11px;color:var(--ink-subtle);">手机号</label><input class="form-input" id="comp-phone" placeholder="请输入手机号" style="padding:8px 12px;border:1px solid var(--hairline-strong);border-radius:6px;width:100%;font-size:13px;"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-outline" style="flex:1;padding:8px;" onclick="hideAddCompanionForm()">取消</button>
+          <button class="btn-gold" style="flex:1;margin:0;max-width:none;padding:8px;" onclick="addCompanion()">确认添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PAGE 16: IDENTITY VERIFY / 身份核验 -->
+<!-- ================================================================ -->
+<div class="page" id="page-verify">
+  <div class="status-bar"><span class="time">9:41</span><span class="icons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-wifi"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-battery"/></svg></span></div>
+  <div class="nav-bar">
+    <div class="left"><span class="title" style="font-family:var(--serif);">YESTAR</span></div>
+    <div class="avatar-sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg></div>
+  </div>
+  <div class="page-content">
+    <div class="verify-center">
+      <div class="verify-shield">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-shield"/></svg>
+      </div>
+      <div class="verify-title">身份核验</div>
+      <div class="verify-sub">请确认您的院内信息以继续点餐</div>
+    </div>
+    <div class="info-card">
+      <div class="info-row">
+        <div class="info-col"><label>姓名</label><div class="val">王雅芝</div></div>
+        <div class="info-col"><label>病房 / 床位</label><div class="val">VIP 302 &middot; 床A</div></div>
+      </div>
+      <div style="margin-top:8px;"><label style="font-size:11px;color:var(--ink-subtle);">住院号</label><div style="font-size:14px;font-weight:500;color:var(--ink);">YX20260512008</div></div>
+    </div>
+    <div class="alert-strip" style="background:var(--gold-subtle);border-left-color:var(--gold);color:#8A6D3B;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C89A38" stroke-width="1.8" style="flex-shrink:0;margin-top:1px;"><use href="#ic-info"/></svg>
+      <span>信息仅用于院内餐食配送，受医疗隐私保护</span>
+    </div>
+    <div style="padding:16px;">
+      <button class="btn-gold" onclick="navigateTo('page-home')">确认无误，开始点餐</button>
+      <div style="text-align:center;font-size:11px;color:var(--ink-subtle);margin-top:12px;">如有信息不符，请联系护理站更新</div>
+    </div>
+    <div style="display:flex;gap:8px;padding:0 16px;">
+      <div style="flex:1;height:80px;border-radius:8px;background-image:url('原型_图片/food2.png');background-size:cover;background-position:center;"></div>
+      <div style="flex:1;height:80px;border-radius:8px;background:url('原型_图片/food3.png') center/cover;"></div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab-item active"><svg class="tab-icon"><use href="#ic-dining"/></svg><span class="tab-label">点餐</span></div>
+    <div class="tab-item" onclick="showToast('请先完成身份核验')"><svg class="tab-icon"><use href="#ic-orders"/></svg><span class="tab-label">订单</span></div>
+    <div class="tab-item" onclick="showToast('请先完成身份核验')"><svg class="tab-icon"><use href="#ic-profile"/></svg><span class="tab-label">我的</span></div>
+  </div>
+</div>
+
+</div><!-- end phone -->
+
+<script>
+// ====== App State ======
+let cart = [];
+let currentRating = 0;
+
+// ====== Navigation ======
+function navigateTo(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(pageId);
+  if (target) target.classList.add('active');
+  if (pageId === 'page-cart') renderCart();
+  if (pageId === 'page-confirm') renderConfirm();
+}
+
+function historyBack() { navigateTo('page-orders'); }
+
+// ====== Category Switch ======
+function switchCat(el, cat) {
+  el.parentElement.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ====== Cart ======
+function addSetToCart() {
+  addToCart('术后修护套餐', 128);
+  addToCart('燕窝枸杞粥', 168);
+  addToCart('泰式香辣鲜虾沙拉', 88);
+  showToast('套餐已全部加入购物车');
+  setTimeout(() => navigateTo('page-cart'), 800);
+}
+
+function addToCart(name, price) {
+  const existing = cart.find(c => c.name === name);
+  if (existing) { existing.qty++; }
+  else { cart.push({ name, price, qty: 1 }); }
+  showToast('已加入购物车');
+}
+
+function removeFromCart(name) {
+  cart = cart.filter(c => c.name !== name);
+  renderCart();
+}
+
+function changeQty(name, delta) {
+  const item = cart.find(c => c.name === name);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) { removeFromCart(name); return; }
+  renderCart();
+}
+
+function renderCart() {
+  const container = document.getElementById('cart-items');
+  const summary = document.getElementById('cart-summary');
+  const footer = document.getElementById('cart-footer');
+  const countEl = document.getElementById('cart-count');
+  if (!container) return;
+
+  if (cart.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--ink-subtle);"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ink-placeholder)" stroke-width="1" style="margin-bottom:12px;"><use href="#ic-cart"/></svg><div style="font-size:14px;">购物车为空</div><div style="font-size:12px;margin-top:4px;">去首页挑选餐品吧</div></div>';
+    summary.innerHTML = '';
+    footer.style.display = 'none';
+    if (countEl) countEl.textContent = '';
+  } else {
+    let html = '';
+    let total = 0;
+    cart.forEach(item => {
+      const subtotal = item.price * item.qty;
+      total += subtotal;
+      html += `<div class="cart-item">
+        <div class="cart-img" style="background:linear-gradient(135deg,var(--canvas),var(--hairline));"></div>
+        <div class="cart-info">
+          <div class="cart-name">${item.name}</div>
+          <div class="cart-meta">会员价</div>
+        </div>
+        <div class="cart-price">&#165;${subtotal}</div>
+        <div class="cart-qty">
+          <button onclick="changeQty('${item.name}',-1)">&#8722;</button>
+          <span style="font-size:13px;">${item.qty}</span>
+          <button onclick="changeQty('${item.name}',1)">+</button>
+        </div>
+      </div>`;
+    });
+    container.innerHTML = html;
+    summary.innerHTML = `<div class="row"><span>餐品合计</span><span>&#165;${total}</span></div>
+      <div class="row"><span>会员权益抵扣</span><span style="color:var(--gold);">&#165;0</span></div>
+      <div class="row total" style="border-top:1px solid var(--hairline);padding-top:8px;margin-top:6px;"><span>应付</span><span class="total">&#165;${total}</span></div>`;
+    footer.style.display = 'block';
+    if (countEl) countEl.textContent = cart.length + '件';
+  }
+}
+
+function renderConfirm() {
+  const container = document.getElementById('confirm-items');
+  const totalEl = document.querySelector('.cart-summary-total');
+  if (!container) return;
+  let total = 0;
+  let html = '';
+  cart.forEach(item => {
+    const subtotal = item.price * item.qty;
+    total += subtotal;
+    html += `<div class="row"><span>${item.name} x${item.qty}</span><span>&#165;${subtotal}</span></div>`;
+  });
+  container.innerHTML = html || '<div class="row"><span>暂无餐品</span><span>&#165;0</span></div>';
+  if (totalEl) totalEl.textContent = '&#165;' + total;
+}
+
+function submitOrder() {
+  cart = [];
+  const orderId = 'YX' + new Date().toISOString().slice(0,10).replace(/-/g,'') + String(Math.floor(Math.random()*9000+1000));
+  document.getElementById('success-order-id').textContent = orderId;
+  navigateTo('page-success');
+}
+
+// ====== Rating ======
+function rateStar(n) {
+  currentRating = n;
+  const stars = document.querySelectorAll('#rate-stars .star');
+  stars.forEach((s, i) => {
+    if (i < n) {
+      s.classList.add('filled');
+      s.querySelector('use').setAttribute('href','#ic-star-filled');
+    } else {
+      s.classList.remove('filled');
+      s.querySelector('use').setAttribute('href','#ic-star');
+    }
+  });
+}
+
+// ====== Toast ======
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ====== Companion ======
+let compCounter = 3;
+
+function removeCompanion(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function showAddCompanionForm() {
+  document.getElementById('add-comp-btn').style.display = 'none';
+  document.getElementById('add-comp-form').style.display = 'block';
+}
+
+function hideAddCompanionForm() {
+  document.getElementById('add-comp-btn').style.display = 'block';
+  document.getElementById('add-comp-form').style.display = 'none';
+  document.getElementById('comp-name').value = '';
+  document.getElementById('comp-phone').value = '';
+}
+
+function addCompanion() {
+  const name = document.getElementById('comp-name').value.trim();
+  const relation = document.getElementById('comp-relation').value;
+  const phone = document.getElementById('comp-phone').value.trim();
+  if (!name || !phone) { showToast('请填写姓名和手机号'); return; }
+
+  const id = 'comp-' + compCounter++;
+  const maskedPhone = phone.slice(0,3) + '****' + phone.slice(-4);
+  const html = `<div class="companion-row" id="${id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--canvas);border-radius:8px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:18px;background:var(--primary-subtle);display:flex;align-items:center;justify-content:center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><use href="#ic-profile"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:500;">${name}</div>
+        <div style="font-size:11px;color:var(--ink-subtle);">${relation} · ${maskedPhone}</div>
+      </div>
+    </div>
+    <button onclick="removeCompanion('${id}')" style="background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:4px 8px;">删除</button>
+  </div>`;
+  document.getElementById('companion-list').insertAdjacentHTML('beforeend', html);
+  hideAddCompanionForm();
+  showToast('已添加陪护人');
+}
+
+// ====== Init ======
+renderCart();
+</script>
+
+</body>
+</html>

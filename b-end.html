@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>艺星·臻味 — B端后台管理</title>
+<style>
+:root {
+  --primary: #722424;
+  --primary-hover: #5E1D1D;
+  --primary-subtle: #F8E9E6;
+  --gold: #C89A38;
+  --gold-hover: #B08830;
+  --gold-subtle: #FBF5E8;
+  --ink: #333333;
+  --ink-muted: #666666;
+  --ink-subtle: #888888;
+  --ink-placeholder: #AAAAAA;
+  --canvas: #F9F2ED;
+  --canvas-b: #F5F5F5;
+  --surface: #FFFFFF;
+  --hairline: #EEEEEE;
+  --hairline-strong: #DDDDDD;
+  --success: #2E7D32;
+  --success-bg: #E8F5E9;
+  --warning: #E67E22;
+  --warning-bg: #FFF7E6;
+  --danger: #C62828;
+  --danger-bg: #FFF0F0;
+  --info: #5C6BC0;
+  --info-bg: #E8EAF6;
+  --sidebar-bg: #1A0A0D;
+  --sidebar-text: rgba(255,255,255,0.55);
+  --sidebar-active: #C89A38;
+  --serif: 'Times New Roman', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--sans); background: #E8E4DF; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+.panel {
+  width: 1280px; height: 860px; background: var(--canvas); border-radius: 12px;
+  display: flex; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+/* ========== Sidebar ========== */
+.sidebar { width: 200px; background: var(--sidebar-bg); display: flex; flex-direction: column; flex-shrink: 0; }
+.sidebar-logo { padding: 20px 16px; color: #FFF; font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 8px; }
+.sidebar-logo .logo-icon { width: 24px; height: 24px; }
+.sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+.sidebar-label { padding: 12px 16px 4px; font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1px; font-family: var(--sans); }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; color: var(--sidebar-text); font-size: 13px; font-weight: 400; transition: all 0.15s; border-left: 3px solid transparent; font-family: var(--sans); }
+.sidebar-item:hover { background: rgba(255,255,255,0.04); }
+.sidebar-item.active { color: var(--sidebar-active); border-left: 3px solid var(--sidebar-active); background: rgba(196,154,56,0.08); font-weight: 500; }
+.sidebar-item svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ========== Main Area ========== */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 52px; background: var(--surface); border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+.topbar .breadcrumb { font-size: 13px; color: var(--ink-muted); font-family: var(--sans); }
+.topbar .breadcrumb span { color: var(--ink); font-weight: 500; }
+.topbar .topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; color: var(--ink-muted); }
+.topbar-icon:hover { background: var(--canvas-b); }
+.topbar-icon svg { width: 18px; height: 18px; }
+.content { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ========== Page visibility ========== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ========== Dashboard ========== */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card { background: var(--surface); border-radius: 10px; padding: 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.stat-card .stat-label { font-size: 11px; color: var(--ink-subtle); margin-bottom: 6px; font-family: var(--sans); }
+.stat-card .stat-value { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--ink); }
+.stat-card .stat-change { font-size: 11px; margin-top: 4px; }
+.stat-card .stat-change.up { color: var(--success); }
+.stat-card .stat-change.down { color: var(--danger); }
+.stat-card .stat-value.gold { color: var(--gold); }
+.stat-card .stat-value.danger { color: var(--danger); }
+
+/* Panels */
+.panel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.panel-card { background: var(--surface); border-radius: 10px; padding: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.panel-card .panel-title { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--hairline); }
+
+/* ========== Table ========== */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; font-weight: 500; color: var(--ink-muted); font-size: 11px; border-bottom: 1px solid var(--hairline); font-family: var(--sans); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); color: var(--ink); }
+tr:hover td { background: var(--canvas); }
+
+/* ========== Tags & Badges ========== */
+.tag { display: inline-flex; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: var(--sans); }
+.tag-green { background: var(--success-bg); color: var(--success); }
+.tag-gold { background: var(--gold-subtle); color: var(--gold); }
+.tag-red { background: var(--danger-bg); color: var(--danger); }
+.tag-blue { background: var(--info-bg); color: var(--info); }
+.tag-gray { background: var(--canvas-b); color: var(--ink-muted); }
+
+.status-dot { width: 8px; height: 8px; border-radius: 4px; display: inline-block; margin-right: 6px; }
+.status-dot.green { background: var(--success); }
+.status-dot.orange { background: var(--warning); }
+.status-dot.red { background: var(--danger); }
+
+/* ========== Buttons ========== */
+.btn-gold { background: var(--gold); color: #FFF; border: none; border-radius: 20px; padding: 8px 20px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--sans); }
+.btn-gold:hover { background: var(--gold-hover); }
+.btn-gold-sm { background: var(--gold); color: #FFF; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.btn-gold-sm:hover { background: var(--gold-hover); }
+.btn-outline-sm { background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+.btn-ghost-sm { background: transparent; color: var(--primary); border: none; font-size: 12px; cursor: pointer; font-family: var(--sans); }
+.btn-danger-sm { background: var(--danger); color: #FFF; border: none; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); }
+
+/* ========== Kanban ========== */
+.kanban-board { display: flex; gap: 12px; overflow-x: auto; }
+.kanban-col { min-width: 220px; background: var(--canvas-b); border-radius: 8px; padding: 12px; }
+.kanban-col-title { font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 10px; font-family: var(--sans); }
+.kanban-card { background: var(--surface); border-radius: 6px; padding: 12px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; }
+.kanban-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.kanban-card.overdue { border-left: 3px solid var(--danger); }
+.kanban-card .kanban-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.kanban-card .kanban-meta { font-size: 11px; color: var(--ink-subtle); }
+
+/* ========== Member Cards ========== */
+.member-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.member-card { background: var(--surface); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.member-card .tier-icon { width: 48px; height: 48px; border-radius: 24px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+.member-card .tier-name { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.member-card .tier-count { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--gold); }
+
+/* ========== Drawer ========== */
+.drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; }
+.drawer-overlay.show { display: block; }
+.drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 400px; background: var(--surface); z-index: 101; box-shadow: -4px 0 20px rgba(0,0,0,0.15); display: none; flex-direction: column; }
+.drawer.show { display: flex; }
+.drawer-header { padding: 16px 20px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; }
+.drawer-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.drawer-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+
+/* ========== Modal ========== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--surface); border-radius: 12px; width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--hairline); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid var(--hairline); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ========== Form ========== */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-bottom: 4px; display: block; font-family: var(--sans); }
+.form-input { width: 100%; padding: 8px 12px; border: 1px solid var(--hairline-strong); border-radius: 6px; font-size: 13px; font-family: var(--sans); color: var(--ink); }
+.form-input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 2px rgba(200,154,56,0.12); }
+.form-select { width: 100%; padding: 8px 12px; border: 1px solid var(--hairline-strong); border-radius: 6px; font-size: 13px; font-family: var(--sans); background: var(--surface); }
+
+/* ========== Food Card B ========== */
+.food-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.food-card-b { background: var(--surface); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.05); cursor: pointer; }
+.food-card-b .food-img-b { height: 140px; background-size: cover; background-position: center; }
+.food-card-b .food-body-b { padding: 14px; }
+.food-card-b .food-name-b { font-family: var(--serif); font-size: 14px; font-weight: 600; color: var(--ink); }
+.food-card-b .food-meta-b { font-size: 11px; color: var(--ink-subtle); margin-top: 4px; }
+.food-card-b .food-price-b { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--gold); margin-top: 6px; }
+
+/* ========== Search ========== */
+.search-bar { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--hairline-strong); border-radius: 20px; padding: 8px 16px; width: 280px; }
+.search-bar input { border: none; outline: none; font-size: 13px; font-family: var(--sans); width: 100%; background: transparent; }
+.search-bar svg { width: 16px; height: 16px; stroke: var(--ink-placeholder); fill: none; }
+
+/* Print badge */
+.print-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--info-bg); color: var(--info); border-radius: 12px; font-size: 11px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<div class="panel">
+
+<!-- ====== SVG Icon Sprite ====== -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+  <symbol id="ic-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
+  <symbol id="ic-truck" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+  <symbol id="ic-utensils" viewBox="0 0 24 24"><path d="M8 2v20M4 8c0 2.8 1.5 5 4 5s4-2.2 4-5V2M18 15V2M14 15c0 2.8 1.5 5 4 5s4-2.2 4-5v-2"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></symbol>
+  <symbol id="ic-user-plus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></symbol>
+  <symbol id="ic-bar-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="ic-trend-down" viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></symbol>
+  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></symbol>
+  <symbol id="ic-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
+  <symbol id="ic-print" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 12H4a2 2 0 00-2 2v4a2 2 0 002 2h16a2 2 0 002-2v-4a2 2 0 00-2-2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="ic-diamond" viewBox="0 0 24 24"><polygon points="12 2 15.5 9 22 9 17 14 19 22 12 17.5 5 22 7 14 2 9 8.5 9 12 2"/></symbol>
+  <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M2 4l3 12h14l3-12-6 4-4-8-4 8-6-4z"/></symbol>
+  <symbol id="ic-medal" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="ic-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+</svg>
+
+<!-- ====== Sidebar ====== -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    YESTAR · 臻味
+  </div>
+  <div class="sidebar-nav">
+    <div class="sidebar-label">管理</div>
+    <div class="sidebar-item active" onclick="switchPage('dashboard', this)">
+      <svg><use href="#ic-grid"/></svg> 工作台
+    </div>
+    <div class="sidebar-item" onclick="switchPage('orders', this)">
+      <svg><use href="#ic-clipboard"/></svg> 订单管理
+    </div>
+    <div class="sidebar-item" onclick="switchPage('delivery', this)">
+      <svg><use href="#ic-truck"/></svg> 配送管理
+    </div>
+    <div class="sidebar-item" onclick="switchPage('food', this)">
+      <svg><use href="#ic-utensils"/></svg> 餐品管理
+    </div>
+    <div class="sidebar-label" style="margin-top:8px;">会员</div>
+    <div class="sidebar-item" onclick="switchPage('member', this)">
+      <svg><use href="#ic-users"/></svg> 会员管理
+    </div>
+    <div class="sidebar-item" onclick="switchPage('proxy', this)">
+      <svg><use href="#ic-user-plus"/></svg> 代客下单
+    </div>
+    <div class="sidebar-label" style="margin-top:8px;">数据</div>
+    <div class="sidebar-item" onclick="switchPage('data', this)">
+      <svg><use href="#ic-bar-chart"/></svg> 数据看板
+    </div>
+    <div class="sidebar-item" onclick="switchPage('loss', this)">
+      <svg><use href="#ic-trend-down"/></svg> 损耗追踪
+    </div>
+  </div>
+</div>
+
+<!-- ====== Main Content ====== -->
+<div class="main">
+  <div class="topbar">
+    <div class="breadcrumb">首页 / <span id="breadcrumb-page">工作台</span></div>
+    <div class="topbar-right">
+      <div class="search-bar" style="width:200px;"><svg><use href="#ic-search"/></svg><input type="text" placeholder="搜索订单或会员..."></div>
+      <div class="topbar-icon"><svg><use href="#ic-bell"/></svg></div>
+      <div class="topbar-icon"><svg><use href="#ic-settings"/></svg></div>
+      <div style="width:32px;height:32px;border-radius:16px;background:var(--primary-subtle);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--primary);font-weight:600;">张</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ====== PAGE: Dashboard ====== -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">今日订单</div><div class="stat-value">32</div><div class="stat-change up">&#8593; 12% vs 昨日</div></div>
+        <div class="stat-card"><div class="stat-label">待处理</div><div class="stat-value danger">5</div><div class="stat-change down">含 1 笔超时</div></div>
+        <div class="stat-card"><div class="stat-label">平均出餐</div><div class="stat-value">18<span style="font-size:16px;">min</span></div><div class="stat-change up">&#8595; 2min</div></div>
+        <div class="stat-card"><div class="stat-label">今日营收</div><div class="stat-value gold">&#165;4,280</div><div class="stat-change up">&#8593; 8% vs 昨日</div></div>
+      </div>
+
+      <div class="panel-row">
+        <div class="panel-card">
+          <div class="panel-title">待处理订单</div>
+          <table>
+            <tr><th>订单编号</th><th>会员</th><th>餐品</th><th>状态</th><th>操作</th></tr>
+            <tr><td>YX05170042</td><td>王雅芝</td><td>术后修护套餐</td><td><span class="tag tag-blue">备餐中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
+            <tr><td>YX05170041</td><td>李雪琴</td><td>燕窝枸杞粥</td><td><span class="tag tag-green">配送中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
+            <tr><td>YX05170038</td><td>赵敏</td><td>双炖花胶胶原汤</td><td><span class="tag tag-red">超时</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
+            <tr><td>YX05170035</td><td>刘芳</td><td>泰式鲜虾沙拉</td><td><span class="tag tag-green">配送中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
+          </table>
+        </div>
+        <div class="panel-card">
+          <div class="panel-title">后厨看板</div>
+          <div class="kanban-board">
+            <div class="kanban-col">
+              <div class="kanban-col-title">待接单 (2)</div>
+              <div class="kanban-card"><div class="kanban-name">术后修护套餐</div><div class="kanban-meta">王雅芝 · VIP302-A</div></div>
+              <div class="kanban-card"><div class="kanban-name">燕窝枸杞粥</div><div class="kanban-meta">李雪琴 · VIP301-B</div></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">备餐中 (3)</div>
+              <div class="kanban-card overdue"><div class="kanban-name">双炖花胶胶原汤</div><div class="kanban-meta">赵敏 · 超时12分钟</div></div>
+              <div class="kanban-card"><div class="kanban-name">泰式鲜虾沙拉</div><div class="kanban-meta">刘芳 · 302-C</div></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-title">待配送 (1)</div>
+              <div class="kanban-card"><div class="kanban-name">小米海参粥</div><div class="kanban-meta">周婷 · VIP305-A</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Orders ====== -->
+    <div class="page" id="page-orders">
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="btn-gold">全部</button>
+        <button class="btn-outline-sm">待接单</button>
+        <button class="btn-outline-sm">备餐中</button>
+        <button class="btn-outline-sm">配送中</button>
+        <button class="btn-outline-sm">已完成</button>
+      </div>
+      <div class="panel-card">
+        <table>
+          <tr><th>订单编号</th><th>会员</th><th>病房</th><th>餐品</th><th>金额</th><th>状态</th><th>时间</th><th>操作</th></tr>
+          <tr><td>YX05170042</td><td>王雅芝</td><td>VIP302-A</td><td>术后修护套餐</td><td style="color:var(--gold);font-weight:600;">&#165;128</td><td><span class="tag tag-blue">备餐中</span></td><td>14:32</td><td>
+            <button class="btn-outline-sm" onclick="openDrawer()">详情</button>
+            <button class="btn-ghost-sm">催单</button>
+          </td></tr>
+          <tr><td>YX05170041</td><td>李雪琴</td><td>VIP301-B</td><td>燕窝枸杞粥</td><td style="color:var(--gold);font-weight:600;">&#165;168</td><td><span class="tag tag-green">配送中</span></td><td>14:15</td><td>
+            <button class="btn-outline-sm" onclick="openDrawer()">详情</button>
+          </td></tr>
+          <tr><td>YX05170038</td><td>赵敏</td><td>302-C</td><td>双炖花胶胶原汤</td><td style="color:var(--gold);font-weight:600;">&#165;198</td><td><span class="tag tag-red">超时</span></td><td>13:50</td><td>
+            <button class="btn-outline-sm" onclick="openDrawer()">详情</button>
+            <button class="btn-danger-sm">优先处理</button>
+          </td></tr>
+          <tr><td>YX05170035</td><td>刘芳</td><td>303-A</td><td>泰式鲜虾沙拉</td><td style="color:var(--gold);font-weight:600;">&#165;88</td><td><span class="tag tag-green">配送中</span></td><td>13:30</td><td>
+            <button class="btn-outline-sm" onclick="openDrawer()">详情</button>
+          </td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Delivery ====== -->
+    <div class="page" id="page-delivery">
+      <div class="panel-card">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+          今日配送任务
+          <span class="print-badge" onclick="showToast('小票已打印')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-print"/></svg> 批量打印小票</span>
+        </div>
+        <table>
+          <tr><th>配送编号</th><th>病房</th><th>会员</th><th>餐品</th><th>配送员</th><th>状态</th><th>操作</th></tr>
+          <tr><td>DEL042</td><td>VIP302-A</td><td>王雅芝</td><td>术后修护套餐</td><td>李师傅</td><td><span class="tag tag-green">配送中</span></td><td>
+            <button class="btn-outline-sm">标记送达</button>
+            <span class="print-badge" style="margin-left:4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><use href="#ic-print"/></svg></span>
+          </td></tr>
+          <tr><td>DEL041</td><td>VIP301-B</td><td>李雪琴</td><td>燕窝枸杞粥</td><td>张师傅</td><td><span class="tag tag-blue">待配送</span></td><td>
+            <button class="btn-gold-sm">开始配送</button>
+          </td></tr>
+          <tr><td>DEL040</td><td>302-C</td><td>赵敏</td><td>双炖花胶胶原汤</td><td>--</td><td><span class="tag tag-red">超时</span></td><td>
+            <button class="btn-danger-sm">紧急处理</button>
+          </td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Food Management ====== -->
+    <div class="page" id="page-food">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div class="search-bar"><svg><use href="#ic-search"/></svg><input type="text" placeholder="搜索餐品..."></div>
+        <button class="btn-gold" onclick="openModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><use href="#ic-plus"/></svg> 新增餐品</button>
+      </div>
+      <div class="food-grid">
+        <div class="food-card-b">
+          <div class="food-img-b" style="background-image:url('原型_图片/food2.png');"></div>
+          <div class="food-body-b"><div class="food-name-b">术后修护套餐</div><div class="food-meta-b">花胶鸡汤 · 术后推荐</div><div class="food-price-b">&#165;128 <span style="font-size:12px;color:var(--ink-subtle);text-decoration:line-through;">&#165;188</span></div><div style="margin-top:8px;"><span class="tag tag-green">上架中</span></div></div>
+        </div>
+        <div class="food-card-b">
+          <div class="food-img-b" style="background-image:url('原型_图片/food3.png');"></div>
+          <div class="food-body-b"><div class="food-name-b">燕窝枸杞粥</div><div class="food-meta-b">金边砂锅慢炖 · 钻石专属</div><div class="food-price-b">&#165;168 <span style="font-size:12px;color:var(--ink-subtle);text-decoration:line-through;">&#165;228</span></div><div style="margin-top:8px;"><span class="tag tag-green">上架中</span></div></div>
+        </div>
+        <div class="food-card-b">
+          <div class="food-img-b" style="background-image:url('原型_图片/food4.png');"></div>
+          <div class="food-body-b"><div class="food-name-b">双炖花胶胶原汤</div><div class="food-meta-b">鱼胶滋补 · 深炖浓汤</div><div class="food-price-b">&#165;198 <span style="font-size:12px;color:var(--ink-subtle);text-decoration:line-through;">&#165;268</span></div><div style="margin-top:8px;"><span class="tag tag-green">上架中</span></div></div>
+        </div>
+        <div class="food-card-b">
+          <div class="food-img-b" style="background-image:url('原型_图片/food5.png');"></div>
+          <div class="food-body-b"><div class="food-name-b">泰式鲜虾沙拉</div><div class="food-meta-b">开背虎虾 · 高蛋白轻食</div><div class="food-price-b">&#165;88 <span style="font-size:12px;color:var(--ink-subtle);text-decoration:line-through;">&#165;118</span></div><div style="margin-top:8px;"><span class="tag tag-green">上架中</span></div></div>
+        </div>
+        <div class="food-card-b" style="opacity:0.6;">
+          <div class="food-img-b" style="background-image:url('原型_图片/food6.png');"></div>
+          <div class="food-body-b"><div class="food-name-b">麻酱拌面</div><div class="food-meta-b">含麸质 · 过敏提醒</div><div class="food-price-b">&#165;38</div><div style="margin-top:8px;"><span class="tag tag-gray">已下架</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Member ====== -->
+    <div class="page" id="page-member">
+      <div class="member-cards">
+        <div class="member-card">
+          <div class="tier-icon" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5"><use href="#ic-medal"/></svg></div>
+          <div class="tier-name">翡翠会员</div>
+          <div class="tier-count">1,280</div>
+          <div style="font-size:11px;color:var(--ink-subtle);">消费满 &#165;2,000</div>
+        </div>
+        <div class="member-card">
+          <div class="tier-icon" style="background:linear-gradient(135deg,#fbf5e8,#f0d89c);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><use href="#ic-crown"/></svg></div>
+          <div class="tier-name">黄金会员</div>
+          <div class="tier-count">680</div>
+          <div style="font-size:11px;color:var(--ink-subtle);">消费满 &#165;8,000</div>
+        </div>
+        <div class="member-card">
+          <div class="tier-icon" style="background:linear-gradient(135deg,#d4af37,#f6e5a0);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B6914" stroke-width="1.5"><use href="#ic-diamond"/></svg></div>
+          <div class="tier-name">钻石会员</div>
+          <div class="tier-count">320</div>
+          <div style="font-size:11px;color:var(--ink-subtle);">消费满 &#165;20,000</div>
+        </div>
+      </div>
+      <div class="panel-card" style="margin-top:20px;">
+        <div class="panel-title">会员列表</div>
+        <table>
+          <tr><th>会员</th><th>等级</th><th>病房</th><th>累计消费</th><th>剩余额度</th><th>手术日期</th></tr>
+          <tr><td>王雅芝</td><td><span class="tag tag-gold">钻石</span></td><td>VIP302-A</td><td style="color:var(--gold);font-weight:600;">&#165;28,500</td><td>&#165;380</td><td>05/12</td></tr>
+          <tr><td>李雪琴</td><td><span class="tag tag-gold">黄金</span></td><td>VIP301-B</td><td>&#165;15,200</td><td>&#165;220</td><td>05/13</td></tr>
+          <tr><td>赵敏</td><td><span class="tag tag-green">翡翠</span></td><td>302-C</td><td>&#165;3,800</td><td>&#165;100</td><td>05/14</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Proxy Order ====== -->
+    <div class="page" id="page-proxy">
+      <div class="panel-card">
+        <div class="panel-title">代客下单</div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;">
+            <div class="form-group"><label class="form-label">选择会员</label><select class="form-select"><option>王雅芝 — VIP302-A 钻石</option><option>李雪琴 — VIP301-B 黄金</option><option>赵敏 — 302-C 翡翠</option></select></div>
+            <div class="form-group"><label class="form-label">餐品</label><select class="form-select"><option>术后修护套餐 — ¥128</option><option>燕窝枸杞粥 — ¥168</option><option>双炖花胶胶原汤 — ¥198</option><option>泰式鲜虾沙拉 — ¥88</option></select></div>
+            <div class="form-group"><label class="form-label">备注</label><textarea class="form-input" rows="2" placeholder="特殊要求..."></textarea></div>
+            <button class="btn-gold">提交订单</button>
+          </div>
+          <div style="flex:1;background:var(--canvas);border-radius:8px;padding:14px;">
+            <div style="font-size:12px;color:var(--ink-subtle);margin-bottom:8px;">护理提醒</div>
+            <div style="font-size:12px;color:var(--ink-muted);line-height:1.6;">
+              王雅芝 — 术后第5天<br>
+              过敏原：麸质、虾<br>
+              建议：清淡温凉饮食<br>
+              剩余免费额度：&#165;380
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Data ====== -->
+    <div class="page" id="page-data">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">本月订单总量</div><div class="stat-value">1,280</div><div class="stat-change up">&#8593; 18% vs 上月</div></div>
+        <div class="stat-card"><div class="stat-label">本月营收</div><div class="stat-value gold">&#165;156,200</div><div class="stat-change up">&#8593; 15% vs 上月</div></div>
+        <div class="stat-card"><div class="stat-label">平均出餐时间</div><div class="stat-value">17<span style="font-size:16px;">min</span></div><div class="stat-change up">&#8595; 3min</div></div>
+        <div class="stat-card"><div class="stat-label">损耗率</div><div class="stat-value danger">2.4%</div><div class="stat-change down">&#8593; 0.3% vs 上月</div></div>
+      </div>
+      <div class="panel-card">
+        <div class="panel-title">热门餐品 TOP 5</div>
+        <table>
+          <tr><th>排名</th><th>餐品</th><th>销量</th><th>营收</th></tr>
+          <tr><td>1</td><td>术后修护套餐</td><td>342</td><td style="color:var(--gold);">&#165;43,776</td></tr>
+          <tr><td>2</td><td>燕窝枸杞粥</td><td>285</td><td style="color:var(--gold);">&#165;47,880</td></tr>
+          <tr><td>3</td><td>双炖花胶胶原汤</td><td>198</td><td style="color:var(--gold);">&#165;39,204</td></tr>
+          <tr><td>4</td><td>泰式鲜虾沙拉</td><td>156</td><td style="color:var(--gold);">&#165;13,728</td></tr>
+          <tr><td>5</td><td>小米海参粥</td><td>142</td><td style="color:var(--gold);">&#165;11,360</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== PAGE: Loss Tracking ====== -->
+    <div class="page" id="page-loss">
+      <div class="panel-card">
+        <div class="panel-title">损耗记录</div>
+        <table>
+          <tr><th>日期</th><th>餐品</th><th>数量</th><th>原因</th><th>金额</th><th>操作人</th></tr>
+          <tr><td>05/17</td><td>术后修护套餐</td><td>2</td><td>会员退餐</td><td style="color:var(--danger);">&#165;256</td><td>张厨</td></tr>
+          <tr><td>05/16</td><td>燕窝枸杞粥</td><td>1</td><td>超时报废</td><td style="color:var(--danger);">&#165;168</td><td>李厨</td></tr>
+          <tr><td>05/16</td><td>泰式鲜虾沙拉</td><td>1</td><td>食材异常</td><td style="color:var(--danger);">&#165;88</td><td>王厨</td></tr>
+          <tr><td>05/15</td><td>小米海参粥</td><td>1</td><td>配送破损</td><td style="color:var(--danger);">&#165;80</td><td>张师傅</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+</div><!-- end panel -->
+
+<!-- ====== Drawer ====== -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-title">订单详情 — YX05170042</span>
+    <div class="drawer-close" onclick="closeDrawer()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-x"/></svg></div>
+  </div>
+  <div class="drawer-body">
+    <div class="form-group"><label class="form-label">会员</label><div style="font-size:14px;font-weight:500;">王雅芝 · 钻石会员</div></div>
+    <div class="form-group"><label class="form-label">病房</label><div style="font-size:14px;">VIP 302 · 床A</div></div>
+    <div class="form-group"><label class="form-label">餐品</label><div style="font-size:14px;font-weight:500;">术后修护套餐 ×1</div></div>
+    <div class="form-group"><label class="form-label">金额</label><div style="font-family:var(--serif);font-size:17px;font-weight:700;color:var(--gold);">&#165;128</div></div>
+    <div class="form-group"><label class="form-label">下单时间</label><div style="font-size:14px;">2026-05-17 14:32</div></div>
+    <div class="form-group"><label class="form-label">状态</label><div><span class="tag tag-blue">备餐中</span></div></div>
+    <div class="form-group"><label class="form-label">过敏原提醒</label><div style="font-size:12px;color:var(--danger);">该会员对麸质、虾过敏</div></div>
+    <div class="form-group"><label class="form-label">护理建议</label><div style="font-size:12px;color:var(--ink-muted);">术后第5天，建议清淡温凉饮食</div></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-outline-sm" style="flex:1;">打印小票</button>
+      <button class="btn-gold" style="flex:1;">下一状态</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Modal: New Food ====== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">新增餐品</span>
+      <div class="drawer-close" onclick="closeModal()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="1.8"><use href="#ic-x"/></svg></div>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">餐品名称</label><input class="form-input" placeholder="输入餐品名称"></div>
+      <div class="form-group"><label class="form-label">分类</label><select class="form-select"><option>滋补汤</option><option>粥</option><option>沙拉</option><option>轻食</option></select></div>
+      <div class="form-group"><label class="form-label">原价</label><input class="form-input" placeholder="&#165;"></div>
+      <div class="form-group"><label class="form-label">会员价</label><input class="form-input" placeholder="&#165;"></div>
+      <div class="form-group"><label class="form-label">标签</label>
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <span class="tag tag-green">术后推荐</span>
+          <span class="tag tag-gold">钻石专属</span>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">描述</label><textarea class="form-input" rows="3" placeholder="餐品描述..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline-sm" onclick="closeModal()">取消</button>
+      <button class="btn-gold" onclick="closeModal()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ====== Page switching ======
+function switchPage(name, el) {
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pageMap = {
+    dashboard: 'page-dashboard', orders: 'page-orders', delivery: 'page-delivery',
+    food: 'page-food', member: 'page-member', proxy: 'page-proxy',
+    data: 'page-data', loss: 'page-loss'
+  };
+  const target = document.getElementById(pageMap[name]);
+  if (target) target.classList.add('active');
+  const breadMap = { dashboard:'工作台', orders:'订单管理', delivery:'配送管理', food:'餐品管理', member:'会员管理', proxy:'代客下单', data:'数据看板', loss:'损耗追踪' };
+  document.getElementById('breadcrumb-page').textContent = breadMap[name] || name;
+}
+
+// ====== Drawer ======
+function openDrawer() {
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('drawer').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('drawer').classList.remove('show');
+}
+
+// ====== Modal ======
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+// ====== Toast ======
+function showToast(msg) {
+  let t = document.getElementById('toast-b');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast-b';
+    t.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#FFF;padding:12px 28px;border-radius:22px;font-size:14px;z-index:999;pointer-events:none;opacity:0;transition:opacity 0.3s;font-family:var(--sans);';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 1500);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>艺星·臻味 — 原型演示</title>
+<style>
+:root {
+  --primary: #722424;
+  --gold: #C89A38;
+  --canvas: #F9F2ED;
+  --ink: #333333;
+  --ink-muted: #666666;
+  --serif: 'Times New Roman', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--sans);
+  background: linear-gradient(135deg, #1A0A0D 0%, #2D1118 50%, #1A0A0D 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card {
+  background: var(--canvas);
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+}
+h1 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.subtitle {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.divider {
+  width: 40px;
+  height: 2px;
+  background: var(--gold);
+  margin: 0 auto 24px;
+}
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.link-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.link-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 4px 16px rgba(200,154,56,0.15);
+}
+.link-info { text-align: left; }
+.link-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.link-desc {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.link-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.link-arrow svg { width: 16px; height: 16px; stroke: #FFF; }
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.tag-c { background: #F8E9E6; color: #722424; }
+.tag-b { background: #FBF5E8; color: #C89A38; }
+.note {
+  margin-top: 24px;
+  font-size: 11px;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>YESTAR · 臻味</h1>
+  <div class="subtitle">Medical-Aesthetics In-Clinic Dining</div>
+  <div class="divider"></div>
+  <div class="links">
+    <a href="c-end.html" class="link-card">
+      <div class="link-info">
+        <div class="link-title">C 端原型 <span class="tag tag-c">会员端</span></div>
+        <div class="link-desc">WeChat Mini Program · 375×812</div>
+      </div>
+      <div class="link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </a>
+    <a href="b-end.html" class="link-card">
+      <div class="link-info">
+        <div class="link-title">B 端原型 <span class="tag tag-b">管理后台</span></div>
+        <div class="link-desc">Admin Dashboard · 1280×860</div>
+      </div>
+      <div class="link-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </a>
+  </div>
+  <div class="note">建议使用手机竖屏查看 C 端原型<br>B 端原型请在桌面浏览器打开</div>
+</div>
+</body>
+</html>
