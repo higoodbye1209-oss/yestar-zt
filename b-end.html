@@ -314,16 +314,35 @@ tr:hover td { background: var(--canvas); }
         <div class="stat-card"><div class="stat-label">今日营收</div><div class="stat-value gold">&#165;4,280</div><div class="stat-change up">&#8593; 8% vs 昨日</div></div>
       </div>
 
-      <div class="panel-row">
+      <div class="panel-row" style="grid-template-columns:1fr;">
         <div class="panel-card">
           <div class="panel-title">待处理订单</div>
-          <table>
-            <tr><th>订单编号</th><th>会员</th><th>餐品</th><th>状态</th><th>操作</th></tr>
-            <tr><td>YX05170042</td><td>王雅芝</td><td>术后修护套餐</td><td><span class="tag tag-blue">备餐中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
-            <tr><td>YX05170041</td><td>李雪琴</td><td>燕窝枸杞粥</td><td><span class="tag tag-green">配送中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
-            <tr><td>YX05170038</td><td>赵敏</td><td>双炖花胶胶原汤</td><td><span class="tag tag-red">超时</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
-            <tr><td>YX05170035</td><td>刘芳</td><td>泰式鲜虾沙拉</td><td><span class="tag tag-green">配送中</span></td><td><button class="btn-outline-sm" onclick="openDrawer()">详情</button></td></tr>
-          </table>
+          <div class="kanban-board">
+            <div class="kanban-card" style="min-width:200px;">
+              <div class="kanban-name">YX05170042</div>
+              <div class="kanban-meta">王雅芝 · 术后修护套餐</div>
+              <div style="margin-top:6px;"><span class="tag tag-blue">备餐中</span></div>
+              <button class="btn-outline-sm" style="margin-top:8px;" onclick="openDrawer()">详情</button>
+            </div>
+            <div class="kanban-card" style="min-width:200px;">
+              <div class="kanban-name">YX05170041</div>
+              <div class="kanban-meta">李雪琴 · 燕窝枸杞粥</div>
+              <div style="margin-top:6px;"><span class="tag tag-green">配送中</span></div>
+              <button class="btn-outline-sm" style="margin-top:8px;" onclick="openDrawer()">详情</button>
+            </div>
+            <div class="kanban-card overdue" style="min-width:200px;">
+              <div class="kanban-name">YX05170038</div>
+              <div class="kanban-meta">赵敏 · 双炖花胶胶原汤</div>
+              <div style="margin-top:6px;"><span class="tag tag-red">超时</span></div>
+              <button class="btn-outline-sm" style="margin-top:8px;" onclick="openDrawer()">详情</button>
+            </div>
+            <div class="kanban-card" style="min-width:200px;">
+              <div class="kanban-name">YX05170035</div>
+              <div class="kanban-meta">刘芳 · 泰式鲜虾沙拉</div>
+              <div style="margin-top:6px;"><span class="tag tag-green">配送中</span></div>
+              <button class="btn-outline-sm" style="margin-top:8px;" onclick="openDrawer()">详情</button>
+            </div>
+          </div>
         </div>
         <div class="panel-card">
           <div class="panel-title">后厨看板</div>
